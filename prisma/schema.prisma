@@ -30,6 +30,7 @@ model User {
   cartItems     CartItem[]
   addresses     Address[]
   reviews       Review[]
+  logs          Log[]
 
   @@map("users")
 }
@@ -257,4 +258,15 @@ model SiteSettings {
   updatedAt   DateTime @updatedAt
 
   @@map("site_settings")
+}
+
+model Log {
+  id        String   @id @default(cuid())
+  type      String
+  userId    String?
+  message   String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
 }
