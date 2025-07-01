@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 3D Ürünler E-Ticaret Sitesi
 
-## Getting Started
+Bu proje, 3D ürünler satışı için modern, modüler ve özelleştirilebilir bir e-ticaret platformudur. Next.js, TypeScript, Tailwind CSS ve Prisma ile geliştirilmiştir.
 
-First, run the development server:
+## 🚀 Özellikler
+- Modern ve responsive tasarım
+- Kategori ve ürün listeleme
+- Ürün detay sayfası
+- Sepet ve ödeme akışı
+- Kullanıcı kayıt/giriş sistemi
+- Profil, siparişlerim, faturalarım ve hesap ayarları
+- Hakkımızda ve iletişim sayfaları
+- Modüler yapı: Admin panel ile içerik yönetimi (geliştirilebilir)
+- Kolayca özelleştirilebilir tema ve içerik
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📦 Kurulum
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Projeyi klonlayın:**
+   ```bash
+   git clone <repo-url>
+   cd <proje-klasörü>
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. **Bağımlılıkları yükleyin:**
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Veritabanı ayarları:**
+   - `.env` dosyasında `DATABASE_URL` değerini kendi PostgreSQL bağlantı adresinizle güncelleyin.
+   - Prisma şemasını veritabanına yansıtın:
+     ```bash
+     npx prisma db push
+     ```
 
-## Learn More
+4. **Geliştirme sunucusunu başlatın:**
+   ```bash
+   npm run dev
+   ```
+   Ardından [http://localhost:3000](http://localhost:3000) adresini ziyaret edin.
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Geliştirme
+- Tüm sayfalar `src/app` altında bulunur.
+- Bileşenler `src/components` altında modüler olarak ayrılmıştır.
+- Mock verilerle çalışır, backend ve admin panel entegrasyonu için hazırdır.
+- Tasarımda Tailwind CSS ve Lucide React ikonları kullanılmıştır.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🏗️ Deploy
+- Vercel, Netlify veya kendi sunucunuzda kolayca deploy edebilirsiniz.
+- Çevre değişkenlerini (örn. veritabanı bağlantısı) production ortamında ayarlamayı unutmayın.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 👩‍💻 Katkı
+- Pull request ve issue açarak katkıda bulunabilirsiniz.
+- Kod standartlarına ve proje yapısına uygun PR göndermeye özen gösterin.
 
-## Deploy on Vercel
+## 📄 Lisans
+MIT
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Not:**
+- Admin panel, ürün ekleme/düzenleme, sipariş yönetimi ve ödeme entegrasyonu için backend geliştirmesi gereklidir.
+- Demo görselleri ve içerikler örnek olarak eklenmiştir.
+
+Her türlü soru ve öneriniz için iletişime geçebilirsiniz!
