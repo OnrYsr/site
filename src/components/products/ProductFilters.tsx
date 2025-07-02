@@ -1,7 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Filter, X } from 'lucide-react';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  productCount: number;
+}
 
 interface ProductFiltersProps {
   selectedCategory: string;
@@ -12,16 +19,6 @@ interface ProductFiltersProps {
   setShowFilters: (show: boolean) => void;
 }
 
-const categories = [
-  { id: 'all', name: 'Tüm Kategoriler' },
-  { id: 'Mimari Modeller', name: 'Mimari Modeller' },
-  { id: 'Karakter Modelleri', name: 'Karakter Modelleri' },
-  { id: 'Araç Modelleri', name: 'Araç Modelleri' },
-  { id: 'Mobilya Modelleri', name: 'Mobilya Modelleri' },
-  { id: 'Elektronik Modeller', name: 'Elektronik Modeller' },
-  { id: 'Doğa Modelleri', name: 'Doğa Modelleri' }
-];
-
 export default function ProductFilters({
   selectedCategory,
   setSelectedCategory,
@@ -30,126 +27,147 @@ export default function ProductFilters({
   showFilters,
   setShowFilters
 }: ProductFiltersProps) {
-  const [showOnMobile, setShowOnMobile] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handlePriceChange = (index: number, value: string) => {
-    const newRange: [number, number] = [...priceRange];
-    newRange[index] = parseFloat(value) || 0;
-    setPriceRange(newRange);
-  };
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
-  const clearFilters = () => {
-    setSelectedCategory('all');
-    setPriceRange([0, 1000]);
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/categories');
+      const data = await response.json();
+
+      if (data.success) {
+        setCategories(data.data);
+      }
+    } catch (err) {
+      console.error('Categories fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filterContent = (
-    <div className="bg-white rounded-lg p-6 shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <Filter className="w-5 h-5" />
-          Filtreler
-        </h3>
-        <button
-          onClick={clearFilters}
-          className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
-        >
-          Temizle
-        </button>
-      </div>
-
+    <div className="space-y-6">
       {/* Categories */}
-      <div className="mb-6">
-        <h4 className="font-medium text-gray-900 mb-3">Kategoriler</h4>
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <label key={category.id} className="flex items-center">
-              <input
-                type="radio"
-                name="category"
-                value={category.id}
-                checked={selectedCategory === category.id}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-              />
-              <span className="ml-2 text-sm text-gray-700">{category.name}</span>
-            </label>
-          ))}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Kategoriler</h3>
+        <div className="space-y-3">
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="radio"
+              name="category"
+              value="all"
+              checked={selectedCategory === 'all'}
+              onChange={() => setSelectedCategory('all')}
+              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+            />
+            <span className="ml-3 text-gray-700">
+              Tüm Kategoriler
+            </span>
+          </label>
+          
+          {loading ? (
+            <div className="space-y-2">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            categories.map((category) => (
+              <label key={category.id} className="flex items-center justify-between cursor-pointer">
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    name="category"
+                    value={category.slug}
+                    checked={selectedCategory === category.slug}
+                    onChange={() => setSelectedCategory(category.slug)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="ml-3 text-gray-700">
+                    {category.name}
+                  </span>
+                </div>
+                <span className="text-sm text-gray-500">
+                  ({category.productCount})
+                </span>
+              </label>
+            ))
+          )}
         </div>
       </div>
 
       {/* Price Range */}
-      <div className="mb-6">
-        <h4 className="font-medium text-gray-900 mb-3">Fiyat Aralığı</h4>
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <input
-              type="number"
-              placeholder="Min"
-              value={priceRange[0]}
-              onChange={(e) => handlePriceChange(0, e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            />
-            <span className="text-gray-500 self-center">-</span>
-            <input
-              type="number"
-              placeholder="Max"
-              value={priceRange[1]}
-              onChange={(e) => handlePriceChange(1, e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            />
-          </div>
-          <div className="text-xs text-gray-500">
-            ₺{priceRange[0]} - ₺{priceRange[1]}
-          </div>
-        </div>
-      </div>
-
-      {/* Features */}
-      <div className="mb-6">
-        <h4 className="font-medium text-gray-900 mb-3">Özellikler</h4>
-        <div className="space-y-2">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <span className="ml-2 text-sm text-gray-700">İndirimli Ürünler</span>
-          </label>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <span className="ml-2 text-sm text-gray-700">Yeni Ürünler</span>
-          </label>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <span className="ml-2 text-sm text-gray-700">Öne Çıkanlar</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Ratings */}
       <div>
-        <h4 className="font-medium text-gray-900 mb-3">Değerlendirme</h4>
-        <div className="space-y-2">
-          {[5, 4, 3, 2, 1].map((rating) => (
-            <label key={rating} className="flex items-center">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Fiyat Aralığı</h3>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Min</label>
               <input
-                type="checkbox"
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                type="number"
+                value={priceRange[0]}
+                onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
+                className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                min="0"
               />
-              <span className="ml-2 text-sm text-gray-700">
-                {rating} yıldız ve üzeri
-              </span>
-            </label>
-          ))}
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Max</label>
+              <input
+                type="number"
+                value={priceRange[1]}
+                onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 1000])}
+                className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                min="0"
+              />
+            </div>
+          </div>
+          
+          {/* Quick Price Filters */}
+          <div className="space-y-2">
+            <div className="text-sm text-gray-600">Hızlı Seçim</div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: '0-100₺', range: [0, 100] as [number, number] },
+                { label: '100-250₺', range: [100, 250] as [number, number] },
+                { label: '250-500₺', range: [250, 500] as [number, number] },
+                { label: '500₺+', range: [500, 1000] as [number, number] }
+              ].map((option) => (
+                <button
+                  key={option.label}
+                  onClick={() => setPriceRange(option.range)}
+                  className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                    priceRange[0] === option.range[0] && priceRange[1] === option.range[1]
+                      ? 'bg-blue-100 border-blue-300 text-blue-700'
+                      : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Clear Filters */}
+      <div className="pt-4 border-t border-gray-200">
+        <button
+          onClick={() => {
+            setSelectedCategory('all');
+            setPriceRange([0, 1000]);
+          }}
+          className="w-full px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          Filtreleri Temizle
+        </button>
       </div>
     </div>
   );
@@ -157,43 +175,37 @@ export default function ProductFilters({
   return (
     <>
       {/* Desktop Filters */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block bg-white rounded-lg p-6 shadow">
         {filterContent}
       </div>
 
-      {/* Mobile Filters */}
-      <div className="lg:hidden">
-        <button
-          onClick={() => setShowOnMobile(!showOnMobile)}
-          className="w-full flex items-center justify-between p-4 bg-white rounded-lg shadow-sm mb-4"
-        >
-          <span className="font-medium text-gray-900">Filtreler</span>
-          <Filter className="w-5 h-5 text-gray-500" />
-        </button>
-
-        {/* Mobile Filter Overlay */}
-        {showOnMobile && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowOnMobile(false)} />
-            <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl overflow-y-auto">
-              <div className="p-4 border-b">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Filtreler</h3>
-                  <button
-                    onClick={() => setShowOnMobile(false)}
-                    className="p-1 hover:bg-gray-100 rounded"
-                  >
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
+      {/* Mobile Filters Modal */}
+      {showFilters && (
+        <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+          <div className="bg-white w-full h-full overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">Filtreler</h2>
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <div className="p-4">
-                {filterContent}
+              {filterContent}
+              <div className="mt-6">
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Filtreleri Uygula
+                </button>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 } 

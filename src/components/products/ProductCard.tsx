@@ -4,20 +4,24 @@ import Link from 'next/link';
 import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   price: number;
   originalPrice: number | null;
-  image: string;
+  image?: string;
+  images?: string[];
   rating: number;
   reviews: number;
   discount: number | null;
   category: string;
+  categorySlug?: string;
   slug: string;
   isNew: boolean;
   isFeatured: boolean;
   badgeText?: string;
   badgeColor?: string;
+  stock?: number;
+  description?: string;
 }
 
 interface ProductCardProps {
@@ -26,95 +30,73 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, viewMode }: ProductCardProps) {
+  // Image için fallback
+  const productImage = product.image || (product.images && product.images[0]) || '/api/placeholder/300/300';
+
+  // List View
   if (viewMode === 'list') {
     return (
-      <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
-        <div className="flex gap-4">
-          {/* Product Image */}
-          <div className="relative w-24 h-24 bg-gray-100 rounded-lg flex-shrink-0">
-            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-              <div className="w-8 h-8 bg-white/50 rounded flex items-center justify-center">
-                <div className="w-4 h-4 bg-blue-500 rounded-sm transform rotate-45"></div>
-              </div>
-            </div>
-            
-            {product.discount && (
-              <div className="absolute -top-1 -left-1 bg-red-500 text-white text-xs font-bold px-1 py-0.5 rounded">
-                %{product.discount}
-              </div>
-            )}
-            
-            {product.isNew && (
-              <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs font-bold px-1 py-0.5 rounded">
-                Yeni
-              </div>
-            )}
-            {product.badgeText && (
-              <div
-                className="absolute -bottom-1 left-1 text-white text-xs font-bold px-1 py-0.5 rounded"
-                style={{ backgroundColor: product.badgeColor || '#6366f1' }}
-              >
-                {product.badgeText}
-              </div>
-            )}
+      <div className="bg-white rounded-lg shadow p-4 flex gap-4">
+        <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-20 h-20 bg-blue-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-500 rounded-sm transform rotate-45"></div>
           </div>
+        </div>
 
-          {/* Product Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex justify-between items-start mb-2">
-              <Link href={`/products/${product.slug}`}>
-                <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors truncate">
-                  {product.name}
-                </h3>
-              </Link>
-              <div className="flex gap-1">
-                <button className="p-1 text-gray-400 hover:text-red-500 transition-colors">
-                  <Heart className="w-4 h-4" />
-                </button>
-                <button className="p-1 text-gray-400 hover:text-blue-500 transition-colors">
-                  <Eye className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <p className="text-sm text-gray-500 mb-2">{product.category}</p>
-
-            {/* Rating */}
-            <div className="flex items-center gap-1 mb-2">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-3 h-3 ${
-                      i < Math.floor(product.rating)
-                        ? 'text-yellow-400 fill-current'
-                        : 'text-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-xs text-gray-600 ml-1">
-                ({product.reviews})
-              </span>
-            </div>
-
-            {/* Price */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-gray-900">
-                  ₺{product.price.toFixed(2)}
-                </span>
-                {product.originalPrice && (
-                  <span className="text-sm text-gray-500 line-through">
-                    ₺{product.originalPrice.toFixed(2)}
-                  </span>
-                )}
-              </div>
-              <button className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1">
-                <ShoppingCart className="w-4 h-4" />
-                Sepete Ekle
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-start mb-2">
+            <Link href={`/products/${product.slug}`}>
+              <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors truncate">
+                {product.name}
+              </h3>
+            </Link>
+            <div className="flex gap-1">
+              <button className="p-1 text-gray-400 hover:text-red-500 transition-colors">
+                <Heart className="w-4 h-4" />
+              </button>
+              <button className="p-1 text-gray-400 hover:text-blue-500 transition-colors">
+                <Eye className="w-4 h-4" />
               </button>
             </div>
+          </div>
+
+          <p className="text-sm text-gray-500 mb-2">{product.category}</p>
+
+          {/* Rating */}
+          <div className="flex items-center gap-1 mb-2">
+            <div className="flex items-center">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-3 h-3 ${
+                    i < Math.floor(product.rating)
+                      ? 'text-yellow-400 fill-current'
+                      : 'text-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-gray-600 ml-1">
+              ({product.reviews})
+            </span>
+          </div>
+
+          {/* Price */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold text-gray-900">
+                ₺{product.price.toFixed(2)}
+              </span>
+              {product.originalPrice && (
+                <span className="text-sm text-gray-500 line-through">
+                  ₺{product.originalPrice.toFixed(2)}
+                </span>
+              )}
+            </div>
+            <button className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1">
+              <ShoppingCart className="w-4 h-4" />
+              Sepete Ekle
+            </button>
           </div>
         </div>
       </div>

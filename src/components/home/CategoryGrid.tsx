@@ -1,60 +1,81 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
-const categories = [
-  {
-    id: 1,
-    name: 'Mimari Modeller',
-    description: 'Bina ve yapı tasarımları',
-    image: '/api/placeholder/300/200',
-    color: 'from-blue-500 to-blue-600',
-    slug: 'mimari-modeller'
-  },
-  {
-    id: 2,
-    name: 'Karakter Modelleri',
-    description: 'İnsan ve hayvan karakterleri',
-    image: '/api/placeholder/300/200',
-    color: 'from-purple-500 to-purple-600',
-    slug: 'karakter-modelleri'
-  },
-  {
-    id: 3,
-    name: 'Araç Modelleri',
-    description: 'Otomobil ve araç tasarımları',
-    image: '/api/placeholder/300/200',
-    color: 'from-red-500 to-red-600',
-    slug: 'arac-modelleri'
-  },
-  {
-    id: 4,
-    name: 'Mobilya Modelleri',
-    description: 'Ev ve ofis mobilyaları',
-    image: '/api/placeholder/300/200',
-    color: 'from-green-500 to-green-600',
-    slug: 'mobilya-modelleri'
-  },
-  {
-    id: 5,
-    name: 'Elektronik Modeller',
-    description: 'Cihaz ve elektronik ürünler',
-    image: '/api/placeholder/300/200',
-    color: 'from-yellow-500 to-yellow-600',
-    slug: 'elektronik-modeller'
-  },
-  {
-    id: 6,
-    name: 'Doğa Modelleri',
-    description: 'Bitki ve doğa objeleri',
-    image: '/api/placeholder/300/200',
-    color: 'from-emerald-500 to-emerald-600',
-    slug: 'doga-modelleri'
-  }
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  productCount: number;
+}
+
+// Gradient renkleri
+const gradientColors = [
+  'from-blue-500 to-purple-600',
+  'from-emerald-500 to-teal-600', 
+  'from-orange-500 to-red-600',
+  'from-pink-500 to-rose-600',
+  'from-indigo-500 to-blue-600',
+  'from-green-500 to-emerald-600'
 ];
 
 export default function CategoryGrid() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/categories');
+      const data = await response.json();
+
+      if (data.success) {
+        setCategories(data.data);
+      } else {
+        setError(data.error || 'Kategoriler yüklenirken hata oluştu');
+      }
+    } catch (err) {
+      console.error('Categories fetch error:', err);
+      setError('Kategoriler yüklenirken hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, index) => (
+          <div key={index} className="animate-pulse">
+            <div className="bg-gray-200 rounded-xl h-48"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-600 mb-4">{error}</div>
+        <button 
+          onClick={fetchCategories}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        >
+          Tekrar Dene
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {categories.map((category, index) => (
@@ -67,7 +88,7 @@ export default function CategoryGrid() {
           <Link href={`/products?category=${category.slug}`}>
             <div className="group relative overflow-hidden rounded-xl bg-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               {/* Background Gradient */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-90`}></div>
+              <div className={`absolute inset-0 bg-gradient-to-br ${gradientColors[index % gradientColors.length]} opacity-90`}></div>
               
               {/* Content */}
               <div className="relative p-6 h-48 flex flex-col justify-between">
@@ -76,7 +97,10 @@ export default function CategoryGrid() {
                     {category.name}
                   </h3>
                   <p className="text-white/80 text-sm">
-                    {category.description}
+                    {category.description || `${category.productCount} ürün`}
+                  </p>
+                  <p className="text-white/60 text-xs mt-1">
+                    {category.productCount} ürün mevcut
                   </p>
                 </div>
                 
