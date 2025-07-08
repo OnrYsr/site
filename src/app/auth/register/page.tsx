@@ -2,24 +2,74 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { User, Mail, Lock, UserPlus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { User, Mail, Lock, UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (message) setMessage(null); // Clear message when user types
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Kayıt işlemi burada yapılacak
+    setIsLoading(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: data.message });
+        setForm({ name: '', email: '', password: '' });
+        
+        // Redirect to login page after 2 seconds
+        setTimeout(() => {
+          router.push('/auth/login');
+        }, 2000);
+      } else {
+        setMessage({ type: 'error', text: data.error });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Bir hata oluştu. Lütfen tekrar deneyin.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">Kayıt Ol</h1>
+        
+        {message && (
+          <div className={`mb-4 p-4 rounded-lg flex items-center gap-2 ${
+            message.type === 'success' 
+              ? 'bg-green-50 text-green-700 border border-green-200' 
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}>
+            {message.type === 'success' ? (
+              <CheckCircle className="w-5 h-5" />
+            ) : (
+              <AlertCircle className="w-5 h-5" />
+            )}
+            <span className="text-sm">{message.text}</span>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -77,10 +127,24 @@ export default function RegisterPage() {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+            disabled={isLoading}
+            className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
+              isLoading 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700'
+            } text-white`}
           >
-            <UserPlus className="w-5 h-5" />
-            Kayıt Ol
+            {isLoading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Kayıt Oluşturuluyor...
+              </>
+            ) : (
+              <>
+                <UserPlus className="w-5 h-5" />
+                Kayıt Ol
+              </>
+            )}
           </button>
         </form>
         <div className="mt-6 text-center text-sm text-gray-600">

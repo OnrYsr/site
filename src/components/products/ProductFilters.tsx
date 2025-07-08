@@ -1,13 +1,33 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Filter, X } from 'lucide-react';
+import { Filter, X, ChevronRight, ChevronDown } from 'lucide-react';
+
+interface Subcategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+  parentId: string;
+  isActive: boolean;
+  productCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface Category {
   id: string;
   name: string;
   slug: string;
+  description?: string;
+  image?: string;
+  parentId?: string;
+  isActive: boolean;
   productCount: number;
+  subcategories: Subcategory[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ProductFiltersProps {
@@ -29,6 +49,7 @@ export default function ProductFilters({
 }: ProductFiltersProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   useEffect(() => {
     fetchCategories();
@@ -41,7 +62,9 @@ export default function ProductFilters({
       const data = await response.json();
 
       if (data.success) {
-        setCategories(data.data);
+        // Only show main categories (no parentId) in filters
+        const mainCategories = data.data.filter((cat: Category) => !cat.parentId);
+        setCategories(mainCategories);
       }
     } catch (err) {
       console.error('Categories fetch error:', err);
@@ -50,54 +73,116 @@ export default function ProductFilters({
     }
   };
 
+  const toggleCategoryExpansion = (categoryId: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
   const filterContent = (
     <div className="space-y-6">
       {/* Categories */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Kategoriler</h3>
         <div className="space-y-3">
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="radio"
-              name="category"
-              value="all"
-              checked={selectedCategory === 'all'}
-              onChange={() => setSelectedCategory('all')}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-            />
-            <span className="ml-3 text-gray-700">
-              Tüm Kategoriler
-            </span>
-          </label>
+          {/* Tüm Kategoriler Butonu */}
+          <button
+            onClick={() => setSelectedCategory('all')}
+            className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all duration-200 ${
+              selectedCategory === 'all'
+                ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+            }`}
+          >
+            <span className="font-medium">Tüm Kategoriler</span>
+            <ChevronRight className={`w-4 h-4 transition-transform ${
+              selectedCategory === 'all' ? 'rotate-90' : ''
+            }`} />
+          </button>
           
           {loading ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {[...Array(6)].map((_, index) => (
                 <div key={index} className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-12 bg-gray-200 rounded-lg"></div>
                 </div>
               ))}
             </div>
           ) : (
             categories.map((category) => (
-              <label key={category.id} className="flex items-center justify-between cursor-pointer">
+              <div key={category.id} className="space-y-2">
+                {/* Ana Kategori */}
                 <div className="flex items-center">
-                  <input
-                    type="radio"
-                    name="category"
-                    value={category.slug}
-                    checked={selectedCategory === category.slug}
-                    onChange={() => setSelectedCategory(category.slug)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                  />
-                  <span className="ml-3 text-gray-700">
-                    {category.name}
-                  </span>
+                  <button
+                    onClick={() => setSelectedCategory(category.slug)}
+                    className={`flex-1 flex items-center justify-between p-3 rounded-lg border transition-all duration-200 ${
+                      selectedCategory === category.slug
+                        ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                        : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-medium">{category.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm px-2 py-1 rounded-full ${
+                          selectedCategory === category.slug
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {category.productCount}
+                        </span>
+                        <ChevronRight className={`w-4 h-4 transition-transform ${
+                          selectedCategory === category.slug ? 'rotate-90' : ''
+                        }`} />
+                      </div>
+                    </div>
+                  </button>
+                  
+                  {/* Alt kategoriler varsa expand/collapse butonu */}
+                  {category.subcategories && category.subcategories.length > 0 && (
+                    <button
+                      onClick={() => toggleCategoryExpansion(category.id)}
+                      className="ml-2 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {expandedCategories.includes(category.id) ? (
+                        <ChevronDown className="w-4 h-4" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4" />
+                      )}
+                    </button>
+                  )}
                 </div>
-                <span className="text-sm text-gray-500">
-                  ({category.productCount})
-                </span>
-              </label>
+
+                {/* Alt Kategoriler */}
+                {category.subcategories && 
+                 category.subcategories.length > 0 && 
+                 expandedCategories.includes(category.id) && (
+                  <div className="ml-4 space-y-2">
+                    {category.subcategories.map((subcategory) => (
+                      <button
+                        key={subcategory.id}
+                        onClick={() => setSelectedCategory(subcategory.slug)}
+                        className={`w-full flex items-center justify-between p-2 rounded-lg border transition-all duration-200 text-sm ${
+                          selectedCategory === subcategory.slug
+                            ? 'bg-blue-100 border-blue-300 text-blue-700'
+                            : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-blue-200 hover:bg-blue-50'
+                        }`}
+                      >
+                        <span className="font-medium">{subcategory.name}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          selectedCategory === subcategory.slug
+                            ? 'bg-blue-200 text-blue-700'
+                            : 'bg-gray-200 text-gray-500'
+                        }`}>
+                          {subcategory.productCount}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))
           )}
         </div>
@@ -114,7 +199,7 @@ export default function ProductFilters({
                 type="number"
                 value={priceRange[0]}
                 onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
-                className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 min="0"
               />
             </div>
@@ -124,7 +209,7 @@ export default function ProductFilters({
                 type="number"
                 value={priceRange[1]}
                 onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 1000])}
-                className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 min="0"
               />
             </div>
@@ -143,10 +228,10 @@ export default function ProductFilters({
                 <button
                   key={option.label}
                   onClick={() => setPriceRange(option.range)}
-                  className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                  className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 font-medium ${
                     priceRange[0] === option.range[0] && priceRange[1] === option.range[1]
-                      ? 'bg-blue-100 border-blue-300 text-blue-700'
-                      : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                      : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
                   }`}
                 >
                   {option.label}
@@ -163,8 +248,9 @@ export default function ProductFilters({
           onClick={() => {
             setSelectedCategory('all');
             setPriceRange([0, 1000]);
+            setExpandedCategories([]);
           }}
-          className="w-full px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="w-full px-4 py-3 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
         >
           Filtreleri Temizle
         </button>

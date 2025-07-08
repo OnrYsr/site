@@ -51,7 +51,7 @@ export default function AdminProductNewPage() {
             value={form.name}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="admin-input"
             placeholder="Ürün adı"
           />
         </div>
@@ -63,7 +63,7 @@ export default function AdminProductNewPage() {
             name="image"
             value={form.image}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="admin-input"
             placeholder="Görsel URL (birden fazla için virgül ile ayırın)"
           />
           <p className="text-xs text-gray-500 mt-1">Birden fazla görsel eklemek için virgül ile ayırabilirsiniz.</p>
@@ -76,7 +76,7 @@ export default function AdminProductNewPage() {
             value={form.description}
             onChange={handleChange}
             rows={3}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="admin-textarea"
             placeholder="Ürün açıklaması"
           />
         </div>
@@ -89,7 +89,7 @@ export default function AdminProductNewPage() {
             value={form.price}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="admin-input"
             placeholder="Fiyat"
           />
         </div>
@@ -102,7 +102,7 @@ export default function AdminProductNewPage() {
             value={form.stock}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="admin-input"
             placeholder="Stok"
           />
         </div>
@@ -114,7 +114,7 @@ export default function AdminProductNewPage() {
             value={form.category}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="admin-select"
           >
             <option value="">Kategori seçin</option>
             <option value="Mimari Modeller">Mimari Modeller</option>
@@ -136,7 +136,7 @@ export default function AdminProductNewPage() {
               onChange={handleChange}
               min={0}
               max={100}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="admin-input"
               placeholder="İndirim yüzdesi"
             />
           </div>
@@ -148,7 +148,7 @@ export default function AdminProductNewPage() {
               name="badgeText"
               value={form.badgeText}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="admin-input"
               placeholder="Etiket metni (örn. Yaz İndirimi)"
             />
           </div>
@@ -162,7 +162,7 @@ export default function AdminProductNewPage() {
               name="discountStart"
               value={form.discountStart}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="admin-input"
             />
           </div>
           <div>
@@ -173,7 +173,7 @@ export default function AdminProductNewPage() {
               name="discountEnd"
               value={form.discountEnd}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="admin-input"
             />
           </div>
         </div>

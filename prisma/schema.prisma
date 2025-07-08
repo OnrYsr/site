@@ -48,11 +48,14 @@ model Category {
   slug        String   @unique
   description String?
   image       String?
+  parentId    String?  // Alt kategori için üst kategori ID'si
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // İlişkiler
+  parent      Category? @relation("CategorySubcategories", fields: [parentId], references: [id])
+  subcategories Category[] @relation("CategorySubcategories")
   products    Product[]
 
   @@map("categories")

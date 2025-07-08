@@ -16,7 +16,8 @@ export default function AdminUserDetailPage() {
   const [form, setForm] = useState(userData);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setForm((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
@@ -49,7 +50,7 @@ export default function AdminUserDetailPage() {
             value={form.name}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="admin-input"
             placeholder="Ad Soyad"
           />
         </div>
@@ -62,7 +63,7 @@ export default function AdminUserDetailPage() {
             value={form.email}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="admin-input"
             placeholder="E-posta"
           />
         </div>
@@ -73,7 +74,7 @@ export default function AdminUserDetailPage() {
             name="role"
             value={form.role}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="admin-select"
           >
             <option value="Admin">Admin</option>
             <option value="Kullanıcı">Kullanıcı</option>
