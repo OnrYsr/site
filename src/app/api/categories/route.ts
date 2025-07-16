@@ -37,7 +37,15 @@ export async function GET() {
                 }
               }
             }
-          }
+          },
+          orderBy: [
+            {
+              displayOrder: 'asc'
+            },
+            {
+              name: 'asc'
+            }
+          ]
         },
         _count: {
           select: {
@@ -49,35 +57,51 @@ export async function GET() {
           }
         }
       },
-      orderBy: {
-        name: 'asc'
-      }
+      orderBy: [
+        {
+          displayOrder: 'asc'
+        },
+        {
+          name: 'asc'
+        }
+      ]
     });
 
-    const formattedCategories = categories.map(category => ({
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      description: category.description,
-      image: category.image,
-      parentId: category.parentId,
-      isActive: category.isActive,
-      productCount: category._count.products,
-      subcategories: category.subcategories.map(sub => ({
-        id: sub.id,
-        name: sub.name,
-        slug: sub.slug,
-        description: sub.description,
-        image: sub.image,
-        parentId: sub.parentId,
-        isActive: sub.isActive,
-        productCount: sub._count.products,
-        createdAt: sub.createdAt,
-        updatedAt: sub.updatedAt
-      })),
-      createdAt: category.createdAt,
-      updatedAt: category.updatedAt
-    }));
+    const formattedCategories = categories.map((category: any) => {
+      // Ana kategoriler için product count hesapla: doğrudan bağlı + alt kategorilerdeki
+      const subcategoriesProductCount = category.subcategories.reduce((total: number, sub: any) => {
+        return total + sub._count.products;
+      }, 0);
+      
+      const totalProductCount = category._count.products + subcategoriesProductCount;
+
+      return {
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        description: category.description,
+        image: category.image,
+        parentId: category.parentId,
+        displayOrder: category.displayOrder,
+        isActive: category.isActive,
+        productCount: totalProductCount,
+        subcategories: category.subcategories.map(sub => ({
+          id: sub.id,
+          name: sub.name,
+          slug: sub.slug,
+          description: sub.description,
+          image: sub.image,
+          parentId: sub.parentId,
+          displayOrder: sub.displayOrder,
+          isActive: sub.isActive,
+          productCount: sub._count.products,
+          createdAt: sub.createdAt,
+          updatedAt: sub.updatedAt
+        })),
+        createdAt: category.createdAt,
+        updatedAt: category.updatedAt
+      };
+    });
 
     return NextResponse.json({
       success: true,
@@ -98,12 +122,21 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, description, image, parentId, isActive } = await request.json();
+    const { name, description, image, parentId, displayOrder, isActive } = await request.json();
 
     // Validation
     if (!name?.trim()) {
       return NextResponse.json(
         { success: false, error: 'Kategori adı gereklidir' },
+        { status: 400 }
+      );
+    }
+
+    // Validate displayOrder
+    const orderValue = Number(displayOrder);
+    if (isNaN(orderValue) || orderValue < 0 || orderValue > 999) {
+      return NextResponse.json(
+        { success: false, error: 'Gösterim sırası 0-999 arasında sayısal bir değer olmalıdır' },
         { status: 400 }
       );
     }
@@ -140,6 +173,7 @@ export async function POST(request: NextRequest) {
         description: description?.trim() || null,
         image: image?.trim() || null,
         parentId: parentId || null,
+        displayOrder: orderValue,
         isActive: isActive !== undefined ? isActive : true
       },
       include: {

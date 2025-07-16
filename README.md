@@ -1,81 +1,183 @@
-# HappyBee - 3D Ürünler E-Ticaret Sitesi
+# HappyBee - 3D Ürünler E-Ticaret Platformu
 
-Bu proje, 3D ürünler satışı için modern, modüler ve özelleştirilebilir bir e-ticaret platformudur. Next.js, TypeScript, Tailwind CSS ve Prisma ile geliştirilmiştir.
+Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, TypeScript, Tailwind CSS ve PostgreSQL ile geliştirilmiştir.
 
-## 🚀 Mevcut Özellikler
+## 📊 Sistemin Mevcut Durumu
 
-### ✅ **Çalışan Sistemler**
-- **🔐 Kullanıcı Giriş/Kayıt**: NextAuth ile tam fonksiyonel
-- **📦 Ürün Sistemi**: API'dan dinamik veri çekme
-- **🏷️ Hiyerarşik Kategori Sistemi**: Ana kategori → Alt kategori desteği
-- **🎯 Modern Filtreleme**: Buton tabanlı kategori seçimi ve gelişmiş filtreler
-- **⚙️ Admin Panel**: Tam fonksiyonel CRUD işlemleri (Kategori, Ürün, Kullanıcı, Banner)
-- **🔍 Arama ve Filtreleme**: Fiyat aralığı, kategori, alt kategori, sıralama
-- **📱 Responsive Tasarım**: Mobil uyumlu
-- **⚡ Gerçek Zamanlı Veri**: PostgreSQL veritabanı bağlantısı
+### ✅ **TAM FONKSİYONEL SİSTEMLER**
 
-### 🎨 **Tasarım Özellikleri**
-- Modern ve responsive tasarım
-- Buton tabanlı kategori filtreleri (radio button yerine)
-- Expand/collapse alt kategori sistemı
-- Özelleştirilebilir renk paleti (Tailwind CSS)
-- Dinamik kategori kartları
-- Loading ve error state'leri
-- Smooth animasyonlar ve hover efektleri
-- Global CSS sınıfları (admin-input, admin-textarea, admin-select)
+#### 🔐 **Authentication & Kullanıcı Sistemi**
+- ✅ NextAuth.js entegrasyonu
+- ✅ Kullanıcı kayıt (email/şifre)
+- ✅ Giriş/çıkış sistemi
+- ✅ Session yönetimi
+- ✅ Role tabanlı yetkilendirme (USER/ADMIN)
 
-### 🗄️ **Veritabanı ve API**
-- **PostgreSQL** veritabanı
-- **Prisma ORM** ile type-safe veritabanı işlemleri
-- **Hiyerarşik Kategori Yapısı**: parentId ile alt kategori desteği
-- RESTful API endpoints:
-  - `GET /api/products` - Ürün listeleme + filtreleme
-  - `GET /api/products/[slug]` - Ürün detayı
-  - `GET /api/categories` - Hiyerarşik kategori listeleme
-  - `POST /api/categories` - Kategori oluşturma (alt kategori desteği)
-  - `GET /api/categories/[id]` - Tekil kategori bilgisi
-  - `PUT /api/categories/[id]` - Kategori güncelleme
-  - `DELETE /api/categories/[id]` - Kategori silme (koruma kontrolü)
-  - `POST /api/auth/register` - Kullanıcı kayıt
-  - `POST /api/auth/...` - Kullanıcı yönetimi
+#### 📦 **Ürün Yönetim Sistemi**
+- ✅ Ürün listeleme (filtreleme, arama, sıralama)
+- ✅ Ürün detay sayfaları
+- ✅ Kategori bazlı filtreleme
+- ✅ Admin panel ürün CRUD (tam fonksiyonel)
+- ✅ Ürün resim yönetimi
+- ✅ Stok takibi
+- ✅ Aktif/pasif ürün durumu
+- ✅ Öne çıkan ürün sistemi
 
-### ⚙️ **Admin Panel Özellikleri**
-- **Dashboard**: Genel istatistikler ve özet bilgiler
-- **Kategori Yönetimi**: 
-  - Hiyerarşik kategori oluşturma (ana/alt kategori)
-  - CRUD işlemleri (Oluştur, Oku, Güncelle, Sil)
-  - Kategori istatistikleri ve alt kategori sayısı
-  - Slug otomatik oluşturma (Türkçe karakter desteği)
-- **Ürün Yönetimi**: Ürün CRUD işlemleri (UI tamamlandı)
-- **Kullanıcı Yönetimi**: Kullanıcı listeleme ve detayları
-- **Banner Yönetimi**: Site banner'ları için CRUD
-- **Modern Form Tasarımı**: Tutarlı stil ve UX
+#### 🏷️ **Hiyerarşik Kategori Sistemi**
+- ✅ Ana kategori → Alt kategori yapısı
+- ✅ Kategori bazlı ürün filtreleme
+- ✅ Dinamik kategori navigation
+- ✅ Admin panel kategori CRUD (tam fonksiyonel)
+- ✅ Kategori sıralaması (displayOrder)
+- ✅ Ürün sayısı hesaplama (ana + alt kategoriler)
+
+#### 🎨 **Frontend & UI**
+- ✅ Responsive modern tasarım
+- ✅ Tailwind CSS ile styling
+- ✅ Component tabanlı mimari
+- ✅ Loading ve error state'leri
+- ✅ Mobile-first approach
+- ✅ SEO friendly URL yapısı
+
+#### ⚙️ **Admin Panel**
+- ✅ Dashboard
+- ✅ Ürün yönetimi (CRUD, durum güncelleme, silme)
+- ✅ Kategori yönetimi (CRUD, hiyerarşik yapı)
+- ✅ Dinamik veri görüntüleme
+- ✅ Modern form tasarımları
+
+### 🚧 **SADECE UI VAR (Backend Eksik)**
+
+#### 🛒 **E-ticaret Core Özellikleri**
+- ❌ Sepet sistemi (UI var, API eksik)
+- ❌ Ödeme entegrasyonu (UI var, backend yok)
+- ❌ Sipariş yönetimi (UI var, API eksik)
+- ❌ Kullanıcı profil sayfaları (UI var, backend eksik)
+
+#### 🎯 **Admin Panel Eksikleri**
+- ❌ Banner yönetimi (UI var, CRUD API eksik)
+- ❌ Kullanıcı yönetimi (UI var, CRUD API eksik)
+- ❌ Sipariş yönetimi (UI var, API eksik)
+- ❌ İstatistik dashboard'ları (UI var, veri eksik)
+
+### 💡 **TAMAMEN EKSİK OLAN ÖZELLİKLER**
+
+#### 🌟 **Ürün Özellikleri**
+- ❌ Ürün yorumları ve puanlama sistemi
+- ❌ Favori ürünler
+- ❌ Ürün karşılaştırma
+- ❌ İndirim sistemi (schema var, API eksik)
+
+#### 📧 **İletişim & Bildirimler**
+- ❌ Email sistemi
+- ❌ Push bildirimleri
+- ❌ İletişim formu backend'i
+
+#### 🔍 **Gelişmiş Özellikler**
+- ❌ Gelişmiş arama (ElasticSearch)
+- ❌ Ürün önerileri
+- ❌ Görsel upload sistemi
+- ❌ Çoklu dil desteği
+
+#### 🔒 **Production Hazırlığı**
+- ❌ Güvenlik middleware'leri
+- ❌ Rate limiting
+- ❌ Logging sistemi
+- ❌ Error tracking
+- ❌ Performance monitoring
+
+## 🛠️ Teknoloji Stack'i
+
+### **Frontend**
+- **Next.js 15** - React framework (App Router)
+- **TypeScript** - Type safety
+- **Tailwind CSS 4** - Modern styling
+- **Lucide React** - İkon kütüphanesi
+- **Framer Motion** - Animasyonlar
+- **React Hook Form** - Form yönetimi
+- **Zod** - Schema validation
+
+### **Backend**
+- **Next.js API Routes** - Backend API
+- **Prisma ORM** - Database ORM
+- **PostgreSQL** - Ana veritabanı
+- **NextAuth.js** - Authentication
+- **bcryptjs** - Password hashing
+
+### **Development Tools**
+- **ESLint** - Code linting
+- **TypeScript** - Type checking
+- **Git** - Version control
+- **Prisma Studio** - Database GUI
+
+## 📁 Proje Yapısı
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # Backend API endpoints
+│   │   ├── auth/          # ✅ Authentication (LOGIN/REGISTER)
+│   │   ├── categories/    # ✅ Kategori CRUD (tam fonksiyonel)
+│   │   ├── products/      # ✅ Ürün API'ları (tam fonksiyonel)
+│   │   └── admin/         # ✅ Admin API'ları
+│   │       └── products/  # ✅ Admin ürün CRUD
+│   ├── admin/             # ✅ Admin Panel (kategori+ürün fonksiyonel)
+│   │   ├── categories/    # ✅ Kategori yönetimi (CRUD)
+│   │   ├── products/      # ✅ Ürün yönetimi (CRUD)
+│   │   ├── users/         # 🚧 UI var, API eksik
+│   │   ├── orders/        # 🚧 UI var, API eksik
+│   │   └── banners/       # 🚧 UI var, API eksik
+│   ├── auth/              # ✅ Login/Register sayfaları
+│   ├── products/          # ✅ Ürün listeleme ve detay
+│   ├── cart/              # 🚧 UI var, backend eksik
+│   ├── checkout/          # 🚧 UI var, backend eksik
+│   └── profile/           # 🚧 UI var, backend eksik
+├── components/            # ✅ React bileşenleri
+│   ├── home/              # ✅ Ana sayfa bileşenleri
+│   ├── layout/            # ✅ Header, Footer
+│   ├── products/          # ✅ Ürün bileşenleri
+│   └── providers/         # ✅ Context providers
+├── prisma/                # ✅ Database schema & migrations
+└── types/                 # ✅ TypeScript tip tanımları
+```
 
 ## 📦 Kurulum
 
-### 1️⃣ **Projeyi Klonlayın**
+### **Gereksinimler**
+- Node.js 18+
+- PostgreSQL 14+
+- npm veya yarn
+
+### **1. Projeyi Klonlayın**
 ```bash
 git clone <repo-url>
 cd site
 ```
 
-### 2️⃣ **Bağımlılıkları Yükleyin**
+### **2. Bağımlılıkları Yükleyin**
 ```bash
 npm install
 ```
 
-### 3️⃣ **Çevre Değişkenlerini Ayarlayın**
+### **3. Çevre Değişkenlerini Ayarlayın**
 `.env` dosyasını oluşturun:
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/happybee"
+# Database
+DATABASE_URL="postgresql://postgres:password@localhost:5432/happybee"
+
+# NextAuth
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-super-secret-nextauth-key-here-1234567890"
+
+# App
+NODE_ENV="development"
 ```
 
-### 4️⃣ **Veritabanını Hazırlayın**
+### **4. Veritabanını Hazırlayın**
 ```bash
 # PostgreSQL'i başlatın
-brew services start postgresql@14
+brew services start postgresql@14  # macOS
+# sudo service postgresql start    # Linux
 
 # Veritabanı şemasını oluşturun
 npx prisma db push
@@ -85,132 +187,168 @@ npx ts-node prisma/seed-user.ts
 npx ts-node prisma/seed-products.ts
 ```
 
-### 5️⃣ **Geliştirme Sunucusunu Başlatın**
+### **5. Geliştirme Sunucusunu Başlatın**
 ```bash
 npm run dev
 ```
 
 🌐 **Site**: http://localhost:3000  
 🔧 **Admin Panel**: http://localhost:3000/admin  
-🗄️ **Prisma Studio**: http://localhost:5555 (opsiyonel)
+🗄️ **Prisma Studio**: `npx prisma studio`
 
-## 🔧 Test Kullanıcısı
+## 🧪 Test Verileri
+
+### **Test Kullanıcısı**
 - **Email**: `onuryasar@tes.com`
 - **Şifre**: `123`
+- **Rol**: Admin
 
-## 📊 Mevcut Veriler
-- **6 Ana Kategori**: Mimari, Karakter, Araç, Mobilya, Elektronik, Doğa
-- **Alt Kategoriler**: Test için "Modern Evler", "Klasik Binalar" (Mimari alt kategorileri)
-- **12 Ürün**: Her kategoride 2'şer ürün
-- **Test Kullanıcı**: Giriş için hazır
+### **Mevcut Veriler**
+- **4 Ana Kategori**: Ev Dekorasyon, Mutfak, Günlük Yaşam & Hediyelik
+- **1 Alt Kategori**: Raf Kitap Tutucu (Ev Dekorasyon altında)
+- **1 Test Ürünü**: Dinazor Kitap Ayracı
 
-## 🏗️ Proje Yapısı
+## 🎯 Öncelikli Geliştirme Planı
 
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── api/               # API endpoints
-│   │   ├── auth/          # NextAuth + Register
-│   │   ├── products/      # Ürün API'ları
-│   │   └── categories/    # Hiyerarşik kategori API'ları
-│   ├── products/          # Ürün sayfaları
-│   ├── auth/              # Giriş/kayıt
-│   ├── admin/             # Tam fonksiyonel admin panel
-│   │   ├── categories/    # Kategori CRUD
-│   │   ├── products/      # Ürün yönetimi
-│   │   ├── users/         # Kullanıcı yönetimi
-│   │   └── banners/       # Banner yönetimi
-│   ├── cart/              # Sepet sayfası
-│   ├── checkout/          # Ödeme sayfası
-│   └── profile/           # Kullanıcı profili
-├── components/            # React bileşenleri
-│   ├── home/              # Ana sayfa bileşenleri
-│   ├── layout/            # Header, Footer
-│   ├── products/          # Ürün bileşenleri + modern filtreler
-│   └── providers/         # Context providers
-├── prisma/                # Veritabanı şeması ve seed'ler
-└── types/                 # TypeScript tip tanımları
-```
+### **🔥 Acil Öncelik (Hafta 1-2)**
+1. **Sepet Sistemi Backend**
+   - Cart API endpoints (/api/cart)
+   - Session/localStorage entegrasyonu
+   - Sepet ürün yönetimi
 
-## 🛠️ Teknolojiler
+2. **Sipariş Sistemi Backend**
+   - Order API endpoints (/api/orders)
+   - Admin sipariş yönetimi
+   - Sipariş durumu takibi
 
-### **Frontend**
-- **Next.js 14** - React framework
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **Framer Motion** - Animasyonlar
-- **Lucide React** - İkonlar
+### **⚡ Yüksek Öncelik (Hafta 3-4)**
+3. **Ödeme Entegrasyonu**
+   - Payment provider entegrasyonu
+   - Checkout süreci
+   - Fatura sistemi
 
-### **Backend**
-- **NextAuth.js** - Authentication
-- **Prisma** - Database ORM
-- **PostgreSQL** - Database
-- **bcryptjs** - Password hashing
+4. **Kullanıcı Profil Sistemi**
+   - Profil API endpoints
+   - Adres yönetimi
+   - Sipariş geçmişi
 
-### **Development**
-- **ESLint** - Code linting
-- **Prettier** - Code formatting
-- **Git** - Version control
+### **📈 Orta Öncelik (Ay 2)**
+5. **Admin Panel Tamamlama**
+   - Banner CRUD API
+   - Kullanıcı yönetimi API
+   - İstatistik dashboard'ları
+
+6. **Ürün Özellikleri**
+   - Yorum sistemi
+   - Favori ürünler
+   - İndirim sistemi
+
+### **🚀 Gelecek Özellikler**
+7. **Production Hazırlığı**
+   - Güvenlik middleware'leri
+   - Error tracking
+   - Performance optimizasyonu
+
+8. **Gelişmiş Özellikler**
+   - Görsel upload sistemi
+   - Gelişmiş arama
+   - Çoklu dil desteği
+
+## 🗄️ Veritabanı Şeması
+
+### **Mevcut Tablolar (✅ API Hazır)**
+- `users` - Kullanıcılar
+- `categories` - Hiyerarşik kategoriler
+- `products` - Ürünler
+
+### **Tanımlı Tablolar (❌ API Eksik)**
+- `cart_items` - Sepet öğeleri
+- `orders` - Siparişler
+- `order_items` - Sipariş öğeleri
+- `addresses` - Kullanıcı adresleri
+- `reviews` - Ürün yorumları
+- `discounts` - İndirimler
+- `banners` - Site banner'ları
 
 ## 🚀 Deploy
 
 ### **Veritabanı (Production)**
-1. PostgreSQL instance oluşturun (AWS RDS, Supabase, vb.)
-2. `DATABASE_URL`'yi production DB'ye güncelleyin
-3. `npx prisma db push` ile şemayı deploy edin
-
-### **Uygulama Deploy**
 ```bash
-# Vercel
-vercel deploy
+# 1. PostgreSQL instance oluşturun (Supabase, AWS RDS, vb.)
+# 2. DATABASE_URL'yi production DB'ye güncelleyin
+# 3. Şemayı deploy edin
+npx prisma db push
+```
 
-# Çevre değişkenlerini ayarlayın:
+### **Uygulama Deploy (Vercel)**
+```bash
+# 1. Vercel'e deploy edin
+vercel
+
+# 2. Environment variables ayarlayın:
 # DATABASE_URL=<production-db-url>
 # NEXTAUTH_URL=<your-domain>
 # NEXTAUTH_SECRET=<random-secret>
 ```
 
-## 🔄 Geliştirme Durumu
+## 🎯 Mevcut Eksiklikler & Öneriler
 
-### ✅ **Tamamlanan**
-- [x] Kullanıcı authentication (giriş + kayıt)
-- [x] Ürün listeleme ve filtreleme
-- [x] Hiyerarşik kategori sistemi (ana/alt kategori)
-- [x] Buton tabanlı modern filtreler
-- [x] Admin panel - Kategori CRUD (tam fonksiyonel)
-- [x] Admin panel UI tasarımları (ürün, kullanıcı, banner)
-- [x] Responsive tasarım
-- [x] API endpoints (tam CRUD)
-- [x] Veritabanı entegrasyonu
-- [x] Global CSS sınıfları ve temiz kod yapısı
-- [x] TypeScript tip güvenliği
+### **⚠️ Kritik Eksiklikler**
+1. **E-ticaret Temel Özellikleri**
+   - Sepet ve ödeme sistemi eksik
+   - Sipariş yönetimi eksik
+   - Kullanıcı profil sistemi eksik
 
-### 🔄 **Geliştirme Aşamasında**
-- [ ] Admin panel - Ürün CRUD backend entegrasyonu
-- [ ] Admin panel - Kullanıcı yönetimi backend
-- [ ] Admin panel - Banner sistemi backend
-- [ ] Sepet sistemi backend entegrasyonu
+2. **Güvenlik**
+   - Rate limiting yok
+   - Input validation eksik
+   - CSRF koruması eksik
+
+3. **Production Hazırlığı**
+   - Error handling eksik
+   - Logging sistemi yok
+   - Performance monitoring yok
+
+### **🔧 Teknik İyileştirmeler**
+1. **API Geliştirmeleri**
+   - Pagination eksik
+   - API documentation yok
+   - Error response standartları
+
+2. **Frontend İyileştirmeleri**
+   - Loading skeleton'ları
+   - Optimistic updates
+   - Infinite scroll
+
+3. **Database Optimizasyonu**
+   - İndeks optimizasyonu
+   - Query optimizasyonu
+   - Connection pooling
+
+## 📋 Geliştirme Checklist
+
+### **Hemen Yapılması Gerekenler**
+- [ ] Sepet API endpoints (/api/cart)
+- [ ] Sipariş API endpoints (/api/orders)
+- [ ] Kullanıcı profil API (/api/user/profile)
+- [ ] Admin sipariş yönetimi
 - [ ] Ödeme entegrasyonu
-- [ ] Gerçek ürün görselleri upload sistemi
+
+### **Kısa Vadede Yapılması Gerekenler**
+- [ ] Banner CRUD API
+- [ ] Kullanıcı yönetimi API
+- [ ] Yorum sistemi
 - [ ] Email sistemi
+- [ ] İndirim sistemi
 
-### 💡 **Gelecek Özellikler**
-- [ ] Ürün yorumları ve puanlama
-- [ ] Favori ürünler
+### **Uzun Vadede Yapılması Gerekenler**
 - [ ] Görsel upload sistemi
+- [ ] Gelişmiş arama
+- [ ] Performance optimizasyonu
+- [ ] Güvenlik sıkılaştırması
 - [ ] Çoklu dil desteği
-- [ ] İstatistik dashboard'ları
-- [ ] Gelişmiş arama (ElasticSearch)
 
-## 🆕 **Son Güncellemeler (v2.0)**
-- 🎯 **Hiyerarşik Kategori Sistemi**: Ana kategori → Alt kategori desteği
-- 🎨 **Modern Filtre Tasarımı**: Radio button'lardan buton tabanlı sistem'e geçiş  
-- ⚙️ **Tam Fonksiyonel Admin Panel**: Kategori CRUD tamamen çalışır durumda
-- 🏗️ **API Genişletmesi**: Hiyerarşik veri yapısı ve gelişmiş endpoint'ler
-- 🎭 **CSS Optimizasyonu**: Global sınıflar ve temiz kod yapısı
-- 🔧 **TypeScript İyileştirmeleri**: Tam tip güvenliği
-
-## 🤝 Katkıda Bulunma
+## 📞 İletişim & Katkıda Bulunma
 
 1. Repository'yi fork edin
 2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
@@ -218,14 +356,12 @@ vercel deploy
 4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
 5. Pull Request açın
 
+---
+
 ## 📄 Lisans
 
 Bu proje MIT lisansı altında lisanslanmıştır.
 
----
-
-## 📞 İletişim
-
-Sorularınız için issue açabilir veya iletişime geçebilirsiniz.
-
-**Proje Durumu**: 🚀 Aktif Geliştirme (v2.0 - Hiyerarşik Kategori Sistemi)
+**Proje Durumu**: 🚀 Aktif Geliştirme  
+**Versiyon**: v3.0 - Tam Fonksiyonel Admin Panel & Ürün Sistemi  
+**Son Güncelleme**: Aralık 2024

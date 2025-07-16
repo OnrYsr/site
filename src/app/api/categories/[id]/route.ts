@@ -78,6 +78,7 @@ export async function GET(
       image: category.image,
       parentId: category.parentId,
       parent: category.parent,
+      displayOrder: category.displayOrder,
       isActive: category.isActive,
       productCount: category._count.products,
       subcategories: category.subcategories.map(sub => ({
@@ -118,7 +119,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { name, description, image, parentId, isActive } = await request.json();
+    const { name, description, image, parentId, displayOrder, isActive } = await request.json();
 
     // Check if category exists
     const existingCategory = await prisma.category.findUnique({
@@ -136,6 +137,15 @@ export async function PUT(
     if (!name?.trim()) {
       return NextResponse.json(
         { success: false, error: 'Kategori adı gereklidir' },
+        { status: 400 }
+      );
+    }
+
+    // Validate displayOrder
+    const orderValue = Number(displayOrder);
+    if (isNaN(orderValue) || orderValue < 0 || orderValue > 999) {
+      return NextResponse.json(
+        { success: false, error: 'Gösterim sırası 0-999 arasında sayısal bir değer olmalıdır' },
         { status: 400 }
       );
     }
@@ -190,6 +200,7 @@ export async function PUT(
         description: description?.trim() || null,
         image: image?.trim() || null,
         parentId: parentId || null,
+                  displayOrder: orderValue,
         isActive: isActive !== undefined ? isActive : true
       },
       include: {
@@ -236,6 +247,7 @@ export async function PUT(
       image: category.image,
       parentId: category.parentId,
       parent: category.parent,
+      displayOrder: category.displayOrder,
       isActive: category.isActive,
       productCount: category._count.products,
       subcategories: category.subcategories.map(sub => ({
@@ -245,6 +257,7 @@ export async function PUT(
         description: sub.description,
         image: sub.image,
         parentId: sub.parentId,
+        displayOrder: sub.displayOrder,
         isActive: sub.isActive,
         productCount: sub._count.products,
         createdAt: sub.createdAt,

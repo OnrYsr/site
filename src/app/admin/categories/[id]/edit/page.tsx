@@ -44,6 +44,7 @@ export default function EditCategoryPage() {
     description: '',
     image: '',
     parentId: '',
+    displayOrder: 0,
     isActive: true
   });
 
@@ -70,6 +71,7 @@ export default function EditCategoryPage() {
           description: categoryData.description || '',
           image: categoryData.image || '',
           parentId: categoryData.parentId || '',
+          displayOrder: categoryData.displayOrder || 0,
           isActive: categoryData.isActive
         });
       } else {
@@ -111,6 +113,10 @@ export default function EditCategoryPage() {
       newErrors.parentId = 'Kategori kendisinin alt kategorisi olamaz';
     }
 
+    if (formData.displayOrder < 0 || formData.displayOrder > 999) {
+      newErrors.displayOrder = 'Gösterim sırası 0-999 arasında olmalıdır';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -135,6 +141,7 @@ export default function EditCategoryPage() {
           description: formData.description.trim() || null,
           image: formData.image.trim() || null,
           parentId: formData.parentId || null,
+          displayOrder: parseInt(formData.displayOrder.toString()) || 0,
           isActive: formData.isActive
         }),
       });
@@ -296,6 +303,31 @@ export default function EditCategoryPage() {
                     `Şu anda "${category.parent.name}" kategorisinin alt kategorisi` : 
                     'Şu anda ana kategori'
                   }
+                </p>
+              </div>
+
+              {/* Display Order */}
+              <div>
+                <label htmlFor="displayOrder" className="block text-sm font-medium text-gray-700 mb-2">
+                  Gösterim Sırası *
+                </label>
+                <input
+                  type="number"
+                  id="displayOrder"
+                  name="displayOrder"
+                  value={formData.displayOrder}
+                  onChange={handleChange}
+                  className={`admin-input ${errors.displayOrder ? 'border-red-500' : ''}`}
+                  placeholder="Gösterim sırasını girin (0-999)"
+                  min="0"
+                  max="999"
+                  required
+                />
+                {errors.displayOrder && (
+                  <p className="text-red-500 text-sm mt-1">{errors.displayOrder}</p>
+                )}
+                <p className="text-gray-500 text-sm mt-1">
+                  Küçük sayılar önce görünür (0, 1, 2...)
                 </p>
               </div>
 

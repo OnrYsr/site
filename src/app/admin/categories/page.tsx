@@ -10,6 +10,7 @@ interface Category {
   slug: string;
   description: string | null;
   image: string | null;
+  displayOrder: number;
   isActive: boolean;
   productCount: number;
   createdAt: string;
@@ -135,6 +136,7 @@ export default function AdminCategoriesPage() {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-gray-100">
+              <th className="px-6 py-3 text-left font-semibold text-gray-700">Sıra</th>
               <th className="px-6 py-3 text-left font-semibold text-gray-700">Adı</th>
               <th className="px-6 py-3 text-left font-semibold text-gray-700">Slug</th>
               <th className="px-6 py-3 text-left font-semibold text-gray-700">Ürün Sayısı</th>
@@ -145,13 +147,16 @@ export default function AdminCategoriesPage() {
           <tbody>
             {categories.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                   Henüz kategori eklenmemiş.
                 </td>
               </tr>
             ) : (
               categories.map((category) => (
                 <tr key={category.id} className="border-b last:border-0 hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <span className="text-sm font-medium text-gray-900">{category.displayOrder || 0}</span>
+                  </td>
                   <td className="px-6 py-4">
                     <div>
                       <div className="font-medium text-gray-900">{category.name}</div>
