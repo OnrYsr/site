@@ -66,11 +66,17 @@ export default function AdminProductEditPage() {
       try {
         const response = await fetch('/api/categories');
         if (response.ok) {
-          const data = await response.json();
-          setCategories(data);
+          const result = await response.json();
+          if (result.success && result.data) {
+            setCategories(result.data);
+          } else {
+            console.error('Kategoriler yüklenirken hata:', result.error);
+            setCategories([]);
+          }
         }
       } catch (error) {
         console.error('Kategoriler yüklenirken hata:', error);
+        setCategories([]);
       }
     };
 

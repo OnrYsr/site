@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Star, ShoppingCart, Eye, Heart } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Star, ShoppingCart, Eye, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Product {
   id: string;
@@ -19,14 +19,40 @@ interface Product {
   badgeColor?: string;
 }
 
+interface Banner {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  image: string;
+  link: string | null;
+  type: string;
+  order: number;
+}
+
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [bannersLoading, setBannersLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     fetchFeaturedProducts();
+    fetchFeaturedBanners();
   }, []);
+
+  // Banner otomatik geçiş
+  useEffect(() => {
+    if (banners.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentBannerIndex((prev) => (prev + 1) % banners.length);
+    }, 4000); // 4 saniyede bir geçiş
+
+    return () => clearInterval(interval);
+  }, [banners.length]);
 
   const fetchFeaturedProducts = async () => {
     try {
@@ -46,6 +72,41 @@ export default function FeaturedProducts() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchFeaturedBanners = async () => {
+    try {
+      setBannersLoading(true);
+      const response = await fetch('/api/banners/active?type=FEATURED_PRODUCTS');
+      const data = await response.json();
+
+      if (data.success) {
+        setBanners(data.data);
+      } else {
+        console.error('Featured banners fetch error:', data.error);
+      }
+    } catch (err) {
+      console.error('Featured banners fetch error:', err);
+    } finally {
+      setBannersLoading(false);
+    }
+  };
+
+  const goToPreviousBanner = () => {
+    setCurrentBannerIndex((prev) => (prev - 1 + banners.length) % banners.length);
+  };
+
+  const goToNextBanner = () => {
+    setCurrentBannerIndex((prev) => (prev + 1) % banners.length);
+  };
+
+  const goToPreviousProduct = () => {
+    setCurrentProductIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  const goToNextProduct = () => {
+    const maxIndex = Math.max(0, products.length - 4); // 4 ürün göster
+    setCurrentProductIndex((prev) => Math.min(maxIndex, prev + 1));
   };
 
   if (loading) {
@@ -84,39 +145,174 @@ export default function FeaturedProducts() {
     );
   }
 
+  const currentBanner = banners.length > 0 ? banners[currentBannerIndex] : null;
+
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className={`relative py-16 overflow-hidden ${!currentBanner ? 'bg-gray-50' : ''}`}>
+      {/* Banner Background */}
+      {currentBanner && (
+        <div className="absolute inset-0">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentBannerIndex}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1 }}
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url(${currentBanner.image})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
+          </AnimatePresence>
+          
+          {/* Banner Navigation */}
+          {banners.length > 1 && (
+            <>
+              <button
+                onClick={goToPreviousBanner}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-2 rounded-full transition-all z-10"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              
+              <button
+                onClick={goToNextBanner}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-2 rounded-full transition-all z-10"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+
+              {/* Dots Indicator */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                {banners.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentBannerIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === currentBannerIndex 
+                        ? 'bg-white' 
+                        : 'bg-white/40 hover:bg-white/70'
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Content */}
+      <div className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${currentBanner ? 'text-white' : ''}`}>
         {/* Section Header */}
         <div className="text-center mb-12">
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-3xl font-bold text-gray-900 mb-4"
-          >
-            Öne Çıkan Ürünler
-          </motion.h2>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-gray-600 max-w-2xl mx-auto"
-          >
-            En popüler ve beğenilen 3D modellerimizi keşfedin
-          </motion.p>
+          {currentBanner ? (
+            <>
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg"
+              >
+                {currentBanner.title}
+              </motion.h2>
+              {currentBanner.subtitle && (
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md"
+                >
+                  {currentBanner.subtitle}
+                </motion.p>
+              )}
+              {currentBanner.link && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  className="mt-6"
+                >
+                  <Link
+                    href={currentBanner.link}
+                    className="inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-lg hover:bg-white/30 transition-all transform hover:scale-105 border border-white/30"
+                  >
+                    Keşfet
+                  </Link>
+                </motion.div>
+              )}
+            </>
+          ) : (
+            <>
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-3xl font-bold text-gray-900 mb-4"
+              >
+                Öne Çıkan Ürünler
+              </motion.h2>
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="text-gray-600 max-w-2xl mx-auto"
+              >
+                En popüler ve beğenilen 3D modellerimizi keşfedin
+              </motion.p>
+            </>
+          )}
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-          {products.map((product, index) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        {/* Products Carousel */}
+        <div className={`relative mb-12 ${currentBanner ? 'backdrop-blur-sm bg-white/10 p-6 rounded-2xl' : ''}`}>
+          {/* Products Navigation */}
+          {products.length > 4 && (
+            <>
+              <button
+                onClick={goToPreviousProduct}
+                disabled={currentProductIndex === 0}
+                className={`absolute left-2 top-1/2 transform -translate-y-1/2 z-20 p-2 rounded-full transition-all ${
+                  currentBanner 
+                    ? 'bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white disabled:bg-white/10 disabled:text-white/50' 
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700 disabled:bg-gray-100 disabled:text-gray-400'
+                }`}
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              
+              <button
+                onClick={goToNextProduct}
+                disabled={currentProductIndex >= products.length - 4}
+                className={`absolute right-2 top-1/2 transform -translate-y-1/2 z-20 p-2 rounded-full transition-all ${
+                  currentBanner 
+                    ? 'bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white disabled:bg-white/10 disabled:text-white/50' 
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700 disabled:bg-gray-100 disabled:text-gray-400'
+                }`}
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </>
+          )}
+          
+          {/* Products Slider Container */}
+          <div className="overflow-hidden">
+            <div 
+              className="flex transition-transform duration-500 ease-in-out gap-6"
+              style={{
+                transform: `translateX(-${currentProductIndex * (100 / 4)}%)`
+              }}
             >
+              {products.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className="flex-none w-72 group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                >
               {/* Product Image */}
               <div className="relative aspect-square bg-gray-100">
                 <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
@@ -200,8 +396,10 @@ export default function FeaturedProducts() {
                   )}
                 </div>
               </div>
-            </motion.div>
-          ))}
+                </motion.div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* View All Button */}

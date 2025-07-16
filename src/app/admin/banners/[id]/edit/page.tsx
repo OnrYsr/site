@@ -1,12 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
-export default function AdminBannerNewPage() {
+interface Banner {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  image: string;
+  link: string | null;
+  type: 'HERO' | 'FEATURED_PRODUCTS';
+  isActive: boolean;
+  order: number;
+  startDate: string | null;
+  endDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default function AdminBannerEditPage() {
+  const params = useParams();
   const router = useRouter();
+  const bannerId = params.id as string;
+
+  const [banner, setBanner] = useState<Banner | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [form, setForm] = useState({
     title: '',
     subtitle: '',
@@ -19,10 +42,61 @@ export default function AdminBannerNewPage() {
     endDate: '',
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  // Banner bilgilerini yükle
+  useEffect(() => {
+    const fetchBanner = async () => {
+      if (!bannerId) return;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(`/api/banners/${bannerId}`);
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError('Banner bulunamadı');
+          } else {
+            setError('Banner yüklenirken hata oluştu');
+          }
+          return;
+        }
+
+        const result = await response.json();
+        
+        if (!result.success || !result.data) {
+          setError('Banner verileri alınamadı');
+          return;
+        }
+
+        const bannerData = result.data;
+        setBanner(bannerData);
+
+        // Form verilerini güncelle
+        setForm({
+          title: bannerData.title,
+          subtitle: bannerData.subtitle || '',
+          image: bannerData.image,
+          link: bannerData.link || '',
+          type: bannerData.type || 'HERO',
+          order: bannerData.order,
+          isActive: bannerData.isActive,
+          startDate: bannerData.startDate ? bannerData.startDate.split('T')[0] : '',
+          endDate: bannerData.endDate ? bannerData.endDate.split('T')[0] : '',
+        });
+
+      } catch (error) {
+        console.error('Banner yüklenirken hata:', error);
+        setError('Banner yüklenirken hata oluştu');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBanner();
+  }, [bannerId]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setForm((prev) => ({
       ...prev,
@@ -36,8 +110,8 @@ export default function AdminBannerNewPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    setSaving(true);
+    setError(null);
 
     try {
       // Form validation
@@ -63,47 +137,79 @@ export default function AdminBannerNewPage() {
         }
       }
 
-      const bannerData = {
+      const updateData = {
         title: form.title.trim(),
         subtitle: form.subtitle.trim() || null,
         image: form.image.trim(),
         link: form.link.trim() || null,
-        type: form.type,
         order: form.order,
         isActive: form.isActive,
         startDate: form.startDate || null,
         endDate: form.endDate || null,
       };
 
-      const response = await fetch('/api/banners', {
-        method: 'POST',
+      const response = await fetch(`/api/banners/${bannerId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(bannerData),
+        body: JSON.stringify(updateData),
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
-      if (data.success) {
-        router.push('/admin/banners');
-      } else {
-        setError(data.error || 'Banner oluşturulurken hata oluştu');
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Banner güncellenirken hata oluştu');
       }
+
+      router.push('/admin/banners');
     } catch (error) {
-      console.error('Banner creation error:', error);
-      setError(error instanceof Error ? error.message : 'Banner oluşturulurken hata oluştu');
+      console.error('Banner güncelleme hatası:', error);
+      setError(error instanceof Error ? error.message : 'Banner güncellenirken hata oluştu');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Banner yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 mb-4">{error}</p>
+        <Link href="/admin/banners" className="text-blue-600 hover:underline">
+          Banner listesine dön
+        </Link>
+      </div>
+    );
+  }
+
+  if (!banner) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600 mb-4">Banner bulunamadı</p>
+        <Link href="/admin/banners" className="text-blue-600 hover:underline">
+          Banner listesine dön
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Yeni Banner Ekle</h1>
-          <p className="text-gray-600 mt-1">Site ana sayfası için banner oluşturun</p>
+          <h1 className="text-2xl font-bold text-gray-900">Banner Düzenle</h1>
+          <p className="text-gray-600 mt-1">"{banner.title}" banner'ını düzenliyorsunuz</p>
         </div>
         <Link 
           href="/admin/banners" 
@@ -152,25 +258,6 @@ export default function AdminBannerNewPage() {
             className="admin-input"
             placeholder="Banner alt başlığı (opsiyonel)"
           />
-        </div>
-
-        {/* Banner Tipi */}
-        <div>
-          <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-            Banner Tipi *
-          </label>
-          <select
-            id="type"
-            name="type"
-            value={form.type}
-            onChange={handleChange}
-            required
-            className="admin-input"
-          >
-            <option value="HERO">Ana Sayfa Banner'ı</option>
-            <option value="FEATURED_PRODUCTS">Öne Çıkan Ürünler Banner'ı</option>
-          </select>
-          <p className="text-xs text-gray-500 mt-1">Banner'ın hangi alanda gösterileceğini seçin</p>
         </div>
 
         {/* Görsel URL */}
@@ -292,22 +379,22 @@ export default function AdminBannerNewPage() {
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={saving}
           className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
-            loading
+            saving
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700 text-white'
           }`}
         >
-          {loading ? (
+          {saving ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Oluşturuluyor...
+              Kaydediliyor...
             </>
           ) : (
             <>
               <Save className="w-5 h-5" />
-              Banner Oluştur
+              Değişiklikleri Kaydet
             </>
           )}
         </button>

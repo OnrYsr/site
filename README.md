@@ -22,6 +22,7 @@ Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, Type
 - ✅ Stok takibi
 - ✅ Aktif/pasif ürün durumu
 - ✅ Öne çıkan ürün sistemi
+- ✅ Öne çıkan ürünler carousel sistemi
 
 #### 🏷️ **Hiyerarşik Kategori Sistemi**
 - ✅ Ana kategori → Alt kategori yapısı
@@ -31,6 +32,16 @@ Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, Type
 - ✅ Kategori sıralaması (displayOrder)
 - ✅ Ürün sayısı hesaplama (ana + alt kategoriler)
 
+#### 🎨 **Banner Yönetim Sistemi**
+- ✅ Dinamik banner sistemi (Hero + Featured Products)
+- ✅ Admin panel banner CRUD (tam fonksiyonel)
+- ✅ Banner type sistemi (HERO, FEATURED_PRODUCTS)
+- ✅ Otomatik banner rotasyonu (5s hero, 4s featured)
+- ✅ Manuel banner navigasyonu (ok butonları, dot göstergeleri)
+- ✅ Banner aktif/pasif durumu ve tarih aralığı kontrolü
+- ✅ Banner background entegrasyonu (Featured Products)
+- ✅ Responsive banner carousel sistemi
+
 #### 🎨 **Frontend & UI**
 - ✅ Responsive modern tasarım
 - ✅ Tailwind CSS ile styling
@@ -38,11 +49,14 @@ Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, Type
 - ✅ Loading ve error state'leri
 - ✅ Mobile-first approach
 - ✅ SEO friendly URL yapısı
+- ✅ Framer Motion animasyonları
+- ✅ Carousel ve slider bileşenleri
 
 #### ⚙️ **Admin Panel**
 - ✅ Dashboard
 - ✅ Ürün yönetimi (CRUD, durum güncelleme, silme)
 - ✅ Kategori yönetimi (CRUD, hiyerarşik yapı)
+- ✅ Banner yönetimi (CRUD, type seçimi, tarih kontrolü)
 - ✅ Dinamik veri görüntüleme
 - ✅ Modern form tasarımları
 
@@ -55,7 +69,6 @@ Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, Type
 - ❌ Kullanıcı profil sayfaları (UI var, backend eksik)
 
 #### 🎯 **Admin Panel Eksikleri**
-- ❌ Banner yönetimi (UI var, CRUD API eksik)
 - ❌ Kullanıcı yönetimi (UI var, CRUD API eksik)
 - ❌ Sipariş yönetimi (UI var, API eksik)
 - ❌ İstatistik dashboard'ları (UI var, veri eksik)
@@ -93,7 +106,7 @@ Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, Type
 - **TypeScript** - Type safety
 - **Tailwind CSS 4** - Modern styling
 - **Lucide React** - İkon kütüphanesi
-- **Framer Motion** - Animasyonlar
+- **Framer Motion** - Animasyonlar ve carousel'lar
 - **React Hook Form** - Form yönetimi
 - **Zod** - Schema validation
 
@@ -119,21 +132,22 @@ src/
 │   │   ├── auth/          # ✅ Authentication (LOGIN/REGISTER)
 │   │   ├── categories/    # ✅ Kategori CRUD (tam fonksiyonel)
 │   │   ├── products/      # ✅ Ürün API'ları (tam fonksiyonel)
+│   │   ├── banners/       # ✅ Banner CRUD & Active API (tam fonksiyonel)
 │   │   └── admin/         # ✅ Admin API'ları
 │   │       └── products/  # ✅ Admin ürün CRUD
-│   ├── admin/             # ✅ Admin Panel (kategori+ürün fonksiyonel)
+│   ├── admin/             # ✅ Admin Panel (kategori+ürün+banner fonksiyonel)
 │   │   ├── categories/    # ✅ Kategori yönetimi (CRUD)
 │   │   ├── products/      # ✅ Ürün yönetimi (CRUD)
+│   │   ├── banners/       # ✅ Banner yönetimi (CRUD, type sistemi)
 │   │   ├── users/         # 🚧 UI var, API eksik
-│   │   ├── orders/        # 🚧 UI var, API eksik
-│   │   └── banners/       # 🚧 UI var, API eksik
+│   │   └── orders/        # 🚧 UI var, API eksik
 │   ├── auth/              # ✅ Login/Register sayfaları
 │   ├── products/          # ✅ Ürün listeleme ve detay
 │   ├── cart/              # 🚧 UI var, backend eksik
 │   ├── checkout/          # 🚧 UI var, backend eksik
 │   └── profile/           # 🚧 UI var, backend eksik
 ├── components/            # ✅ React bileşenleri
-│   ├── home/              # ✅ Ana sayfa bileşenleri
+│   ├── home/              # ✅ Ana sayfa bileşenleri (Hero, Featured Products)
 │   ├── layout/            # ✅ Header, Footer
 │   ├── products/          # ✅ Ürün bileşenleri
 │   └── providers/         # ✅ Context providers
@@ -260,6 +274,7 @@ npm run dev
 - `users` - Kullanıcılar
 - `categories` - Hiyerarşik kategoriler
 - `products` - Ürünler
+- `banners` - Site banner'ları (Hero & Featured Products)
 
 ### **Tanımlı Tablolar (❌ API Eksik)**
 - `cart_items` - Sepet öğeleri
@@ -268,7 +283,6 @@ npm run dev
 - `addresses` - Kullanıcı adresleri
 - `reviews` - Ürün yorumları
 - `discounts` - İndirimler
-- `banners` - Site banner'ları
 
 ## 🚀 Deploy
 
@@ -335,7 +349,6 @@ vercel
 - [ ] Ödeme entegrasyonu
 
 ### **Kısa Vadede Yapılması Gerekenler**
-- [ ] Banner CRUD API
 - [ ] Kullanıcı yönetimi API
 - [ ] Yorum sistemi
 - [ ] Email sistemi
@@ -363,5 +376,5 @@ vercel
 Bu proje MIT lisansı altında lisanslanmıştır.
 
 **Proje Durumu**: 🚀 Aktif Geliştirme  
-**Versiyon**: v3.0 - Tam Fonksiyonel Admin Panel & Ürün Sistemi  
-**Son Güncelleme**: Aralık 2024
+**Versiyon**: v4.0 - Tam Fonksiyonel Banner Management Sistemi  
+**Son Güncelleme**: Ocak 2025

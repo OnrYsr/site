@@ -22,11 +22,12 @@ function generateSlug(name: string): string {
 // GET single category
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const category = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         parent: {
           select: {
@@ -116,14 +117,15 @@ export async function GET(
 // PUT update category
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { name, description, image, parentId, displayOrder, isActive } = await request.json();
 
     // Check if category exists
     const existingCategory = await prisma.category.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!existingCategory) {
@@ -151,7 +153,7 @@ export async function PUT(
     }
 
     // Validate parent category if provided
-    if (parentId && parentId !== params.id) {
+    if (parentId && parentId !== id) {
       const parentCategory = await prisma.category.findUnique({
         where: { id: parentId }
       });
@@ -163,7 +165,7 @@ export async function PUT(
       }
       
       // Prevent circular reference (category can't be its own parent)
-      if (parentId === params.id) {
+      if (parentId === id) {
         return NextResponse.json(
           { success: false, error: 'Kategori kendisinin alt kategorisi olamaz' },
           { status: 400 }
@@ -183,7 +185,7 @@ export async function PUT(
         const existingSlug = await prisma.category.findUnique({ 
           where: { slug } 
         });
-        if (!existingSlug || existingSlug.id === params.id) {
+        if (!existingSlug || existingSlug.id === id) {
           break;
         }
         slug = `${baseSlug}-${counter}`;
@@ -193,7 +195,7 @@ export async function PUT(
 
     // Update category
     const category = await prisma.category.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: name.trim(),
         slug,
@@ -287,12 +289,13 @@ export async function PUT(
 // DELETE category
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check if category exists
     const existingCategory = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         subcategories: true,
         _count: {
@@ -334,7 +337,7 @@ export async function DELETE(
 
     // Delete category
     await prisma.category.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({
