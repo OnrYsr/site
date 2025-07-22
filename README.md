@@ -1,4 +1,4 @@
-# HappyBee - 3D Ürünler E-Ticaret Platformu
+# Muse3DStudio - 3D Ürünler E-Ticaret Platformu
 
 Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, TypeScript, Tailwind CSS ve PostgreSQL ile geliştirilmiştir.
 
@@ -177,7 +177,7 @@ npm install
 `.env` dosyasını oluşturun:
 ```env
 # Database
-DATABASE_URL="postgresql://postgres:password@localhost:5432/happybee"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/muse3dstudio"
 
 # NextAuth
 NEXTAUTH_URL="http://localhost:3000"
@@ -290,7 +290,7 @@ npm run dev
 ```bash
 # 15 dakikada hazır!
 curl -sL https://raw.githubusercontent.com/your-username/site/main/scripts/setup-server.sh | sudo bash
-cd /var/www/happybee && git clone https://github.com/your-username/site.git .
+cd /var/www/muse3dstudio && git clone https://github.com/your-username/site.git .
 npm install && npm run db:setup-production && npm run build
 pm2 start ecosystem.config.js && sudo ./scripts/setup-nginx.sh
 ```

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 🌐 HappyBee Nginx Setup Script
+# 🌐 Muse3DStudio Nginx Setup Script
 # Bu script Nginx reverse proxy'i configure eder
 
 set -e  # Exit on any error
 
-echo "🌐 HappyBee Nginx Setup Starting..."
+echo "🌐 Muse3DStudio Nginx Setup Starting..."
 echo "=================================="
 
 # Get server IP
@@ -34,7 +34,7 @@ fi
 # Create nginx config
 echo "📝 Creating Nginx configuration..."
 
-cat > /etc/nginx/sites-available/happybee << EOL
+cat > /etc/nginx/sites-available/muse3dstudio << EOL
 server {
     listen 80;
     server_name $SERVER_NAME;
@@ -45,7 +45,7 @@ server {
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "no-referrer-when-downgrade" always;
 
-    # HappyBee Next.js Application
+    # Muse3DStudio Next.js Application
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -82,14 +82,14 @@ fi
 cat >> /etc/nginx/sites-available/happybee << EOL
     # Static files optimization
     location /_next/static {
-        alias /var/www/happybee/.next/static;
+        alias /var/www/muse3dstudio/.next/static;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
 
     # Public assets
     location /images {
-        alias /var/www/happybee/public/images;
+        alias /var/www/muse3dstudio/public/images;
         expires 1y;
         add_header Cache-Control "public";
     }
@@ -112,7 +112,7 @@ EOL
 
 # Enable site
 echo "🔗 Enabling site..."
-ln -sf /etc/nginx/sites-available/happybee /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/muse3dstudio /etc/nginx/sites-enabled/
 
 # Remove default site if exists
 if [ -f "/etc/nginx/sites-enabled/default" ]; then
@@ -144,7 +144,7 @@ echo "🔧 Direct Next.js access (for testing):"
 echo "   → http://$SERVER_NAME:3000"
 echo ""
 echo "📝 Nginx configuration file:"
-echo "   → /etc/nginx/sites-available/happybee"
+echo "   → /etc/nginx/sites-available/muse3dstudio"
 echo ""
 echo "🔄 To restart Nginx:"
 echo "   → sudo systemctl reload nginx"

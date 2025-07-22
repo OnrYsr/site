@@ -1,5 +1,5 @@
 {
-  "name": "site",
+  "name": "muse3dstudio",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -16,7 +16,7 @@
     "setup:server": "chmod +x scripts/setup-server.sh && sudo ./scripts/setup-server.sh",
     "setup:nginx": "chmod +x scripts/setup-nginx.sh && sudo ./scripts/setup-nginx.sh",
     "deploy:full": "npm install && npm run build && pm2 start ecosystem.config.js && pm2 save",
-    "deploy:update": "git pull && npm install && npm run build && pm2 restart happybee",
+    "deploy:update": "git pull && npm install && npm run build && pm2 restart muse3dstudio",
     "postinstall": "prisma generate"
   },
   "dependencies": {

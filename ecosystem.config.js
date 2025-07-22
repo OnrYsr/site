@@ -1,9 +1,9 @@
 module.exports = {
   apps: [{
-    name: 'happybee',
+    name: 'muse3dstudio',
     script: 'npm',
     args: 'start',
-    cwd: '/var/www/happybee',
+    cwd: '/var/www/muse3dstudio',
     instances: 1,
     autorestart: true,
     watch: false,

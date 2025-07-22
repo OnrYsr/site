@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 🚀 HappyBee Auto Server Setup Script
+# 🚀 Muse3DStudio Auto Server Setup Script
 # Bu script AWS EC2 sunucusunu otomatik olarak configure eder
 
 set -e  # Exit on any error
 
-echo "🚀 HappyBee Server Setup Starting..."
+echo "🚀 Muse3DStudio Server Setup Starting..."
 echo "=================================="
 
 # Update system
@@ -45,25 +45,25 @@ systemctl enable nginx
 echo "🔄 Installing PM2..."
 npm install -g pm2
 
-# Create happybee user and database
+# Create muse3dstudio user and database
 echo "🗄️ Setting up PostgreSQL database..."
 sudo -u postgres psql << 'EOF'
-CREATE DATABASE happybee;
-CREATE USER happybee_user WITH PASSWORD 'HappyBee2024!';
-GRANT ALL PRIVILEGES ON DATABASE happybee TO happybee_user;
-ALTER USER happybee_user CREATEDB;
+CREATE DATABASE muse3dstudio;
+CREATE USER muse3dstudio_user WITH PASSWORD 'Muse3DStudio2024!';
+GRANT ALL PRIVILEGES ON DATABASE muse3dstudio TO muse3dstudio_user;
+ALTER USER muse3dstudio_user CREATEDB;
 \q
 EOF
 
 # Create log directories
 echo "📝 Creating log directories..."
-mkdir -p /var/www/happybee/logs
+mkdir -p /var/www/muse3dstudio/logs
 mkdir -p /var/log/pm2
 
 # Set proper permissions
 echo "🔐 Setting permissions..."
-chown -R www-data:www-data /var/www/happybee
-chmod -R 755 /var/www/happybee
+chown -R www-data:www-data /var/www/muse3dstudio
+chmod -R 755 /var/www/muse3dstudio
 
 # Configure firewall (if ufw is available)
 if command -v ufw &> /dev/null; then
@@ -84,7 +84,7 @@ echo "✅ Server setup completed successfully!"
 echo "=================================="
 echo ""
 echo "📋 Next steps:"
-echo "1. Clone your repository to /var/www/happybee"
+echo "1. Clone your repository to /var/www/muse3dstudio"
 echo "2. Copy env.production.example to .env and configure"
 echo "3. Run: npm install"
 echo "4. Run: npm run db:setup-production"

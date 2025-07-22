@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 🗄️ HappyBee Database Setup Script
+# 🗄️ Muse3DStudio Database Setup Script
 # Bu script PostgreSQL database'ini configure eder ve seed data ekler
 
 set -e  # Exit on any error
 
-echo "🗄️ HappyBee Database Setup Starting..."
+echo "🗄️ Muse3DStudio Database Setup Starting..."
 echo "====================================="
 
 # Check if .env file exists
@@ -39,8 +39,8 @@ echo "✅ Database setup completed successfully!"
 echo "====================================="
 echo ""
 echo "🎯 Database info:"
-echo "- Database: happybee"
-echo "- User: happybee_user"
+echo "- Database: muse3dstudio"
+echo "- User: muse3dstudio_user"
 echo "- Host: localhost:5432"
 echo ""
 echo "👤 Admin login credentials:"

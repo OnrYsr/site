@@ -1,6 +1,6 @@
-# 🚀 HappyBee AWS EC2 Deploy Rehberi
+# 🚀 Muse3DStudio AWS EC2 Deploy Rehberi
 
-Bu rehber HappyBee e-ticaret projesini AWS EC2'ye deploy etmek için hazırlanmıştır.
+Bu rehber Muse3DStudio e-ticaret projesini AWS EC2'ye deploy etmek için hazırlanmıştır.
 
 ## 📋 Sistem Gereksinimleri
 
@@ -26,9 +26,9 @@ Bu rehber HappyBee e-ticaret projesini AWS EC2'ye deploy etmek için hazırlanm�
 ssh -i your-key.pem ubuntu@your-ec2-ip
 
 # Proje dizini oluştur
-sudo mkdir -p /var/www/happybee
-sudo chown $USER:$USER /var/www/happybee
-cd /var/www/happybee
+sudo mkdir -p /var/www/muse3dstudio
+sudo chown $USER:$USER /var/www/muse3dstudio
+cd /var/www/muse3dstudio
 
 # Repo clone et
 git clone https://github.com/your-username/site.git .
@@ -69,14 +69,14 @@ pm2 startup
 
 ## 🌐 Nginx Reverse Proxy Setup
 
-Nginx konfigürasyonu `/etc/nginx/sites-available/happybee` dosyasında:
+Nginx konfigürasyonu `/etc/nginx/sites-available/muse3dstudio` dosyasında:
 
 ```nginx
 server {
     listen 80;
     server_name your-domain.com;  # Domain veya IP
 
-    # HappyBee Ana Site
+    # Muse3DStudio Ana Site
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -100,7 +100,7 @@ server {
 
     # Static files cache
     location /static {
-        alias /var/www/happybee/.next/static;
+        alias /var/www/muse3dstudio/.next/static;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
@@ -109,7 +109,7 @@ server {
 
 Nginx'i enable et:
 ```bash
-sudo ln -s /etc/nginx/sites-available/happybee /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/muse3dstudio /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -119,9 +119,9 @@ sudo systemctl reload nginx
 ### PM2 Monitoring
 ```bash
 pm2 status          # Uygulama durumu
-pm2 logs happybee   # Uygulama logları
+pm2 logs muse3dstudio   # Uygulama logları
 pm2 monit          # Real-time monitoring
-pm2 restart happybee # Uygulamayı restart et
+pm2 restart muse3dstudio # Uygulamayı restart et
 ```
 
 ### System Logs
@@ -139,27 +139,27 @@ free -h
 ### Database Backup
 ```bash
 # PostgreSQL backup
-pg_dump happybee > backup_$(date +%Y%m%d_%H%M%S).sql
+pg_dump muse3dstudio > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Otomatik backup script (crontab'a ekle)
-0 2 * * * pg_dump happybee > /var/backups/happybee_$(date +\%Y\%m\%d).sql
+0 2 * * * pg_dump muse3dstudio > /var/backups/muse3dstudio_$(date +\%Y\%m\%d).sql
 ```
 
 ## 🔄 Update/Deploy Workflow
 
 ### Kod güncellemesi için:
 ```bash
-cd /var/www/happybee
+cd /var/www/muse3dstudio
 git pull origin main
 npm install
 npm run build
-pm2 restart happybee
+pm2 restart muse3dstudio
 ```
 
 ### Database migration için:
 ```bash
 npm run db:push
-pm2 restart happybee
+pm2 restart muse3dstudio
 ```
 
 ## 🔒 SSL Certificate (Let's Encrypt)
@@ -196,7 +196,7 @@ Kurulum sonrası test URL'leri:
 2. **Permission denied for PostgreSQL**
    ```bash
    sudo -u postgres psql
-   ALTER USER happybee_user CREATEDB;
+ALTER USER muse3dstudio_user CREATEDB;
    ```
 
 3. **Nginx 502 Bad Gateway**

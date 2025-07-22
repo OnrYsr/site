@@ -1,6 +1,6 @@
-# ⚡ HappyBee Quick Start Guide
+# ⚡ Muse3DStudio Quick Start Guide
 
-Bu rehber HappyBee'yi 15 dakikada AWS EC2'ye deploy etmenizi sağlar.
+Bu rehber Muse3DStudio'yu 15 dakikada AWS EC2'ye deploy etmenizi sağlar.
 
 ## 🚀 1-Komut Deploy
 
@@ -16,9 +16,9 @@ sudo apt update
 curl -sL https://raw.githubusercontent.com/your-username/site/main/scripts/setup-server.sh | sudo bash
 
 # 2. Proje clone et
-sudo mkdir -p /var/www/happybee
-sudo chown $USER:$USER /var/www/happybee
-cd /var/www/happybee
+sudo mkdir -p /var/www/muse3dstudio
+sudo chown $USER:$USER /var/www/muse3dstudio
+cd /var/www/muse3dstudio
 git clone https://github.com/your-username/site.git .
 
 # 3. Environment ayarla
@@ -64,7 +64,7 @@ Email: onuryasar@tes.com
 
 ```env
 # PostgreSQL (otomatik oluşturuldu)
-DATABASE_URL="postgresql://happybee_user:HappyBee2024!@localhost:5432/happybee"
+DATABASE_URL="postgresql://muse3dstudio_user:Muse3DStudio2024!@localhost:5432/muse3dstudio"
 
 # Server IP'ni yaz
 NEXTAUTH_URL="http://56.228.30.48"
@@ -77,14 +77,14 @@ NEXTAUTH_SECRET="$(openssl rand -base64 32)"
 
 ### Kod güncellemesi:
 ```bash
-cd /var/www/happybee
+cd /var/www/muse3dstudio
 npm run deploy:update
 ```
 
 ### Yeni migration:
 ```bash
 npm run db:push
-pm2 restart happybee
+pm2 restart muse3dstudio
 ```
 
 ## 🌐 URL'ler
@@ -102,13 +102,13 @@ Kurulum sonrası erişim:
 
 ```bash
 # PM2 restart
-pm2 restart happybee
+pm2 restart muse3dstudio
 
 # Nginx restart  
 sudo systemctl reload nginx
 
 # Log kontrolü
-pm2 logs happybee
+pm2 logs muse3dstudio
 sudo tail -f /var/log/nginx/error.log
 
 # Port kontrolü
@@ -146,7 +146,7 @@ sudo ufw allow 443
 
 ## 🎉 Deploy Tamamlandı!
 
-✅ **HappyBee e-ticaret sitesi çalışıyor**  
+✅ **Muse3DStudio e-ticaret sitesi çalışıyor**  
 ✅ **Admin paneli erişilebilir**  
 ✅ **API endpoints aktif**  
 ✅ **Mevcut IoT sistemi korundu**  
