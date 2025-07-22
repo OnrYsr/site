@@ -286,15 +286,18 @@ npm run dev
 
 ## 🚀 Deploy
 
-### **Veritabanı (Production)**
+### **⚡ Hızlı Deploy (AWS EC2)**
 ```bash
-# 1. PostgreSQL instance oluşturun (Supabase, AWS RDS, vb.)
-# 2. DATABASE_URL'yi production DB'ye güncelleyin
-# 3. Şemayı deploy edin
-npx prisma db push
+# 15 dakikada hazır!
+curl -sL https://raw.githubusercontent.com/your-username/site/main/scripts/setup-server.sh | sudo bash
+cd /var/www/happybee && git clone https://github.com/your-username/site.git .
+npm install && npm run db:setup-production && npm run build
+pm2 start ecosystem.config.js && sudo ./scripts/setup-nginx.sh
 ```
 
-### **Uygulama Deploy (Vercel)**
+**📖 Detaylı rehber:** [QUICK-START.md](./QUICK-START.md) | [DEPLOY.md](./DEPLOY.md)
+
+### **Alternatif: Vercel Deploy**
 ```bash
 # 1. Vercel'e deploy edin
 vercel
