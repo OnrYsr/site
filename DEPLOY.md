@@ -1,5 +1,23 @@
 # 🚀 Muse3DStudio AWS EC2 Deploy Rehberi
 
+**✅ PRODUCTION DEPLOYMENT BAŞARILI!**
+
+## 🌐 **Live Production Site**
+- **🔒 Ana Site**: [https://muse3dstudio.com](https://muse3dstudio.com)
+- **🔒 www Subdomain**: [https://www.muse3dstudio.com](https://www.muse3dstudio.com)
+- **⚙️ Admin Panel**: [https://muse3dstudio.com/admin](https://muse3dstudio.com/admin)
+
+## 📊 **Aktif Production Stack**
+- **☁️ AWS EC2**: t3.micro (1 vCPU, 1GB RAM) - `i-03e2a3280eb227ff5`
+- **🌐 Domain**: muse3dstudio.com (GoDaddy + DNS)
+- **🔒 SSL**: Let's Encrypt (Auto-renewal aktif)
+- **🖥️ OS**: Ubuntu 24.04 LTS
+- **🔄 Process Manager**: PM2 (Auto-restart enabled)
+- **🌐 Web Server**: Nginx (HTTPS redirect enabled)
+- **🗄️ Database**: PostgreSQL 14 (12 tablo aktif)
+
+---
+
 Bu rehber Muse3DStudio e-ticaret projesini AWS EC2'ye deploy etmek için hazırlanmıştır.
 
 ## 📋 Sistem Gereksinimleri
@@ -31,7 +49,7 @@ sudo chown $USER:$USER /var/www/muse3dstudio
 cd /var/www/muse3dstudio
 
 # Repo clone et
-git clone https://github.com/your-username/site.git .
+git clone https://github.com/OnrYsr/site.git .
 
 # Kurulum scriptini çalıştır
 chmod +x scripts/setup-server.sh
@@ -46,8 +64,14 @@ nano .env
 
 # Aşağıdaki değerleri güncelle:
 # - DATABASE_URL (PostgreSQL connection string)
-# - NEXTAUTH_URL (your server IP/domain)
+# - NEXTAUTH_URL (https://muse3dstudio.com)
 # - NEXTAUTH_SECRET (strong random string)
+
+# Production environment example:
+# DATABASE_URL="postgresql://muse3dstudio_user:Muse3DStudio2024!@localhost:5432/muse3dstudio"
+# NEXTAUTH_URL="https://muse3dstudio.com"
+# NEXTAUTH_SECRET="muse3d-super-secret-production-key-2024"
+# NODE_ENV="production"
 ```
 
 ### 3. Database Setup

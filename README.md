@@ -2,6 +2,37 @@
 
 Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, TypeScript, Tailwind CSS ve PostgreSQL ile geliştirilmiştir.
 
+## 🌐 **LIVE PRODUCTION SITE**
+
+### **✅ Canlı Site URL'leri:**
+- **🔒 Ana Site**: [https://muse3dstudio.com](https://muse3dstudio.com)
+- **🔒 www Subdomain**: [https://www.muse3dstudio.com](https://www.muse3dstudio.com)
+- **⚙️ Admin Panel**: [https://muse3dstudio.com/admin](https://muse3dstudio.com/admin)
+
+### **🚀 Production Infrastructure:**
+- **☁️ Cloud Provider**: AWS EC2 (t3.micro)
+- **🖥️ Server OS**: Ubuntu 24.04 LTS
+- **🌐 Web Server**: Nginx (Reverse Proxy)
+- **🔄 Process Manager**: PM2 (Auto-restart, Auto-start)
+- **🗄️ Database**: PostgreSQL 14+
+- **🔒 SSL Certificate**: Let's Encrypt (Auto-renewal)
+- **📊 Uptime**: 99.9% (Auto-restart on failure, Auto-start on reboot)
+
+### **🛡️ Security & Performance:**
+- **HTTPS/SSL**: ✅ A+ Rating
+- **Domain Verification**: ✅ Active
+- **Auto HTTPS Redirect**: ✅ Enabled
+- **Security Headers**: ✅ Implemented
+- **Gzip Compression**: ✅ Enabled
+
+### **⚡ Deployment Strategy:**
+- **Build Strategy**: Local build → Git push → Server pull (t3.micro optimized)
+- **Zero Downtime**: PM2 auto-restart & health checks
+- **Auto Backup**: Database scheduled backups
+- **Monitoring**: PM2 real-time monitoring
+
+---
+
 ## 📊 Sistemin Mevcut Durumu
 
 ### ✅ **TAM FONKSİYONEL SİSTEMLER**

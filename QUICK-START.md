@@ -1,25 +1,30 @@
 # ⚡ Muse3DStudio Quick Start Guide
 
+**✅ PRODUCTION DEPLOYMENT BAŞARILI!**
+
+## 🌐 **Live Site**: [https://muse3dstudio.com](https://muse3dstudio.com)
+
 Bu rehber Muse3DStudio'yu 15 dakikada AWS EC2'ye deploy etmenizi sağlar.
 
 ## 🚀 1-Komut Deploy
 
 ### AWS EC2'ye SSH Bağlan
 ```bash
-ssh -i your-key.pem ubuntu@56.228.30.48
+ssh -i your-key.pem ubuntu@51.20.32.9
+# Production Instance: i-03e2a3280eb227ff5
 ```
 
 ### Auto Setup (5 dakika)
 ```bash
 # 1. Server kurulumu (Node.js, PostgreSQL, Nginx, PM2)
 sudo apt update
-curl -sL https://raw.githubusercontent.com/your-username/site/main/scripts/setup-server.sh | sudo bash
+curl -sL https://raw.githubusercontent.com/OnrYsr/site/main/scripts/setup-server.sh | sudo bash
 
 # 2. Proje clone et
 sudo mkdir -p /var/www/muse3dstudio
 sudo chown $USER:$USER /var/www/muse3dstudio
 cd /var/www/muse3dstudio
-git clone https://github.com/your-username/site.git .
+git clone https://github.com/OnrYsr/site.git .
 
 # 3. Environment ayarla
 cp env.production.example .env
