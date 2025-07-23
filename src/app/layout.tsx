@@ -8,7 +8,7 @@ import { Providers } from "@/components/providers/Providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "3D Ürünler Mağazası",
+  title: "Muse3DStudio - 3D Ürünler",
   description: "En kaliteli 3D ürünler ve modeller",
 };
 

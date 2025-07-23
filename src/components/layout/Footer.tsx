@@ -12,7 +12,7 @@ export default function Footer() {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">3D</span>
               </div>
-              <span className="text-xl font-bold">3D Mağaza</span>
+              <span className="text-xl font-bold">Muse3DStudio</span>
             </div>
             <p className="text-gray-300 mb-4 max-w-md">
               En kaliteli 3D ürünler ve modeller için doğru adres. Profesyonel 3D tasarım çözümleri sunuyoruz.
@@ -79,9 +79,9 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">
-            © 2024 3D Mağaza. Tüm hakları saklıdır.
-          </p>
+                  <p className="text-gray-400 text-sm">
+          © 2024 Muse3DStudio. Tüm hakları saklıdır.
+        </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
               Gizlilik Politikası

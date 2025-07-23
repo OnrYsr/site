@@ -61,7 +61,7 @@ export default function Header() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">3D</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">3D Mağaza</span>
+            <span className="text-xl font-bold text-gray-900">Muse3DStudio</span>
           </Link>
 
           {/* Desktop Navigation */}
