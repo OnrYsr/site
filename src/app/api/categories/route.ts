@@ -85,7 +85,7 @@ export async function GET() {
         displayOrder: category.displayOrder,
         isActive: category.isActive,
         productCount: totalProductCount,
-        subcategories: category.subcategories.map(sub => ({
+        subcategories: category.subcategories.map((sub: any) => ({
           id: sub.id,
           name: sub.name,
           slug: sub.slug,

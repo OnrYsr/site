@@ -14,7 +14,7 @@
 /coverage
 
 # next.js
-/.next/
+# /.next/  # Commented out for t3.micro deployment strategy
 /out/
 
 # production
@@ -31,7 +31,11 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Keep .env for production deployment
 
 # vercel
 .vercel
