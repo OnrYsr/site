@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Lock, Mail, LogIn, AlertCircle } from 'lucide-react';
-import { signIn, getSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -32,14 +32,9 @@ export default function LoginPage() {
       if (result?.error) {
         setError('Geçersiz email veya şifre');
       } else if (result?.ok) {
-        // Get session to check user role
-        const session = await getSession();
-        
-        if (session?.user?.role === 'ADMIN') {
-          router.push('/admin');
-        } else {
-          router.push('/');
-        }
+        // Redirect all users to home page
+        // Admin panel can be accessed separately via /admin URL
+        router.push('/');
         router.refresh();
       }
     } catch (err) {
