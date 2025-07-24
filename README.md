@@ -278,6 +278,101 @@ npm run dev
 ### **📈 Orta Öncelik (Ay 2)**
 5. **Admin Panel Tamamlama**
    - Banner CRUD API
+
+## 🚀 Production Deployment
+
+### **Production Sunucu Kurulumu**
+
+#### **1. Environment Variables Ayarlama**
+Production sunucuda `.env` dosyasını doğru ayarlayın:
+```env
+# Muse3DStudio Production Environment Variables
+
+# Database
+DATABASE_URL="postgresql://muse3dstudio_user:your_strong_password@localhost:5432/muse3dstudio"
+
+# NextAuth  
+NEXTAUTH_URL="http://your-server-ip:3000"
+NEXTAUTH_SECRET="your-super-secret-nextauth-key-here-change-this-in-production"
+
+# App Environment
+NODE_ENV="production"
+```
+
+#### **2. Production Build**
+```bash
+# Proje dizinine gidin
+cd /var/www/muse3dstudio
+
+# Bağımlılıkları yükleyin
+npm install
+
+# Production build oluşturun
+npm run build
+
+# PM2 logs dizinini oluşturun
+mkdir -p logs
+```
+
+#### **3. PM2 ile Başlatma**
+```bash
+# PM2 ile başlatın
+pm2 start ecosystem.config.js
+
+# Otomatik başlatma ayarlayın
+pm2 startup
+pm2 save
+```
+
+### **🔧 Troubleshooting**
+
+#### **Problem: Sürekli Restart Oluyor**
+```bash
+# 1. PM2 status kontrol edin
+pm2 status
+
+# 2. Restart sayısı yüksekse, logs kontrol edin
+pm2 logs muse3dstudio --lines 50
+
+# 3. Port çakışması kontrol edin
+ss -tlnp | grep :3000
+
+# 4. Çakışan process'leri durdurun
+kill [PID_NUMBER]
+
+# 5. PM2'yi restart edin
+pm2 restart muse3dstudio
+```
+
+#### **Problem: Build Hatası**
+```bash
+# 1. Node modules temizleyin
+rm -rf node_modules package-lock.json
+
+# 2. Yeniden yükleyin
+npm install
+
+# 3. Build tekrar deneyin
+npm run build
+```
+
+#### **Problem: Database Bağlantı Hatası**
+```bash
+# 1. PostgreSQL çalışıyor mu kontrol edin
+sudo systemctl status postgresql
+
+# 2. Database URL kontrol edin
+echo $DATABASE_URL
+
+# 3. Veritabanı erişim test edin
+npx prisma db push
+```
+
+#### **Çözüldü ✅ Yaygın Sorunlar:**
+- **Next.js production build eksik** → `npm run build`
+- **Port 3000 çakışması** → Manuel process'leri `kill` edin
+- **Environment variables yanlış** → `.env` dosyasını düzeltin
+- **PM2 logs dizini yok** → `mkdir -p logs`
    - Kullanıcı yönetimi API
    - İstatistik dashboard'ları
 

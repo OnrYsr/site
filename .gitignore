@@ -49,3 +49,6 @@ next-env.d.ts
 
 # Sensitive connection information (local only)
 CONNECTIONS.md
+
+# PM2 logs
+/logs/
