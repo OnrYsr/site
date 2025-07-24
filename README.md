@@ -248,6 +248,19 @@ npm run dev
 - **1 Örnek Ürün**: Dinazor Kitap Ayracı
 
 ### **İlk Admin Kullanıcısı Oluşturma**
+
+#### **Yöntem 1: Hardcode Admin (Önerilen)**
+```bash
+# Admin kullanıcısı oluştur (muse3dstudio@outlook.com)
+npm run db:seed:admin
+
+# Credentials:
+# Email: muse3dstudio@outlook.com  
+# Password: 27486399oO*
+# Role: ADMIN
+```
+
+#### **Yöntem 2: Manuel Kayıt**
 - Siteye gidin ve `/auth/register` sayfasından kayıt olun
 - İlk kayıt olan kullanıcıyı admin yapmak için veritabanında `role` alanını `ADMIN` olarak güncelleyin
 

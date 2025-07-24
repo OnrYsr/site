@@ -10,6 +10,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed:products": "ts-node prisma/seed-products.ts",
+    "db:seed:admin": "ts-node prisma/seed-admin.ts",
     "db:seed": "npm run db:seed:products",
     "make:admin": "node scripts/make-admin.js",
     "create:admin": "node scripts/create-admin.js",
