@@ -412,3 +412,8 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 **Proje Durumu**: 🚀 Aktif Geliştirme  
 **Versiyon**: v4.0 - Tam Fonksiyonel Banner Management Sistemi  
 **Son Güncelleme**: Ocak 2025
+
+
+## 🚀 **OTOMATIK DEPLOY AKTİFreset --hard origin/main* 
+✅ GitHub Actions ile otomatik deployment çalışıyor  
+📅 Test tarihi: 24/07/2025 11:29
