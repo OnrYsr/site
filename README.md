@@ -368,11 +368,33 @@ echo $DATABASE_URL
 npx prisma db push
 ```
 
+#### **Problem: Login Çalışmıyor (Session Sorunu)**
+```bash
+# 1. NEXTAUTH_SECRET değişimi sonrası session'lar geçersiz olur
+# 2. Browser cache temizleyin
+# 3. Incognito/Private window deneyin
+# 4. Database kullanıcı kontrolü:
+sudo -u postgres psql muse3dstudio -c "SELECT email, role FROM users;"
+
+# 5. Database connection test:
+curl -I http://localhost:3000
+```
+
+#### **Working Production Environment:**
+```env
+# .env (Production sunucuda)
+DATABASE_URL="postgresql://postgres:@localhost:5432/muse3dstudio"
+NEXTAUTH_URL="http://51.20.32.9:3000"
+NEXTAUTH_SECRET="muse3dstudio-production-secret-2024"
+NODE_ENV="production"
+```
+
 #### **Çözüldü ✅ Yaygın Sorunlar:**
 - **Next.js production build eksik** → `npm run build`
 - **Port 3000 çakışması** → Manuel process'leri `kill` edin
 - **Environment variables yanlış** → `.env` dosyasını düzeltin
 - **PM2 logs dizini yok** → `mkdir -p logs`
+- **Login session sorunu** → Browser cache temizle + NEXTAUTH_SECRET değişimi
    - Kullanıcı yönetimi API
    - İstatistik dashboard'ları
 
