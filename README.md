@@ -227,8 +227,7 @@ brew services start postgresql@14  # macOS
 # Veritabanı şemasını oluşturun
 npx prisma db push
 
-# Test verilerini ekleyin
-npx ts-node prisma/seed-user.ts
+# Örnek ürün verilerini ekleyin
 npx ts-node prisma/seed-products.ts
 ```
 
@@ -241,17 +240,16 @@ npm run dev
 🔧 **Admin Panel**: http://localhost:3000/admin  
 🗄️ **Prisma Studio**: `npx prisma studio`
 
-## 🧪 Test Verileri
-
-### **Test Kullanıcısı**
-- **Email**: `onuryasar@tes.com`
-- **Şifre**: `123`
-- **Rol**: Admin
+## 🧪 Örnek Veriler
 
 ### **Mevcut Veriler**
 - **4 Ana Kategori**: Ev Dekorasyon, Mutfak, Günlük Yaşam & Hediyelik
 - **1 Alt Kategori**: Raf Kitap Tutucu (Ev Dekorasyon altında)
-- **1 Test Ürünü**: Dinazor Kitap Ayracı
+- **1 Örnek Ürün**: Dinazor Kitap Ayracı
+
+### **İlk Admin Kullanıcısı Oluşturma**
+- Siteye gidin ve `/auth/register` sayfasından kayıt olun
+- İlk kayıt olan kullanıcıyı admin yapmak için veritabanında `role` alanını `ADMIN` olarak güncelleyin
 
 ## 🎯 Öncelikli Geliştirme Planı
 

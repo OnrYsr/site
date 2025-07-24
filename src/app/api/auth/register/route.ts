@@ -44,6 +44,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if this is the first user (make them admin)
+    const userCount = await prisma.user.count();
+    const isFirstUser = userCount === 0;
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -53,17 +57,22 @@ export async function POST(request: NextRequest) {
         name,
         email,
         password: hashedPassword,
-        role: 'USER',
+        role: isFirstUser ? 'ADMIN' : 'USER', // İlk kullanıcı admin olur
       },
     });
 
     // Return success response (don't include password)
     const { password: _, ...userWithoutPassword } = user;
     
+    const message = isFirstUser 
+      ? 'Kayıt başarılı! İlk kullanıcı olarak admin yetkileriniz var. Giriş yapabilirsiniz.'
+      : 'Kayıt başarılı! Giriş yapabilirsiniz.';
+    
     return NextResponse.json(
       { 
-        message: 'Kayıt başarılı! Giriş yapabilirsiniz.',
-        user: userWithoutPassword 
+        message,
+        user: userWithoutPassword,
+        isAdmin: isFirstUser
       },
       { status: 201 }
     );

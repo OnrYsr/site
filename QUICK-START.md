@@ -59,8 +59,8 @@ curl http://56.228.30.48/api/products
 ### Admin Paneli Test
 ```
 URL: http://56.228.30.48/admin
-Email: onuryasar@tes.com
-Şifre: 123
+NOT: İlk admin kullanıcısını kayıt ol sayfasından oluşturun
+Sonra veritabanında role ADMIN yapın
 ```
 
 ## ⚡ Environment Variables

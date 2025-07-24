@@ -28,9 +28,6 @@ echo "🗄️ Pushing database schema..."
 npx prisma db push
 
 echo "🌱 Seeding database with initial data..."
-echo "   → Creating admin user..."
-npm run db:seed:user
-
 echo "   → Creating product categories..."
 echo "   → Creating sample products..."  
 npm run db:seed:products
@@ -43,9 +40,8 @@ echo "- Database: muse3dstudio"
 echo "- User: muse3dstudio_user"
 echo "- Host: localhost:5432"
 echo ""
-echo "👤 Admin login credentials:"
-echo "- Email: onuryasar@tes.com"
-echo "- Password: 123"
+echo "👤 Database setup completed successfully!"
+echo "- Please create your admin user via registration"
 echo ""
 echo "🌐 You can now access:"
 echo "- Admin Panel: http://your-server/admin"

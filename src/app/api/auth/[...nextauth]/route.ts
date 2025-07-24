@@ -14,10 +14,7 @@ const handler = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        console.log('Authorization attempt for:', credentials?.email);
-        
         if (!credentials?.email || !credentials?.password) {
-          console.log('Missing email or password');
           return null;
         }
 
@@ -26,14 +23,10 @@ const handler = NextAuth({
             where: { email: credentials.email },
           });
 
-          console.log('User found:', user ? 'Yes' : 'No');
-
           if (user) {
             const passwordMatch = await bcrypt.compare(credentials.password, user.password);
-            console.log('Password match:', passwordMatch);
             
             if (passwordMatch) {
-              console.log('Login successful for:', user.email);
               return { 
                 id: user.id, 
                 name: user.name || '', 
@@ -43,7 +36,6 @@ const handler = NextAuth({
             }
           }
           
-          console.log('Authentication failed');
           return null;
         } catch (error) {
           console.error('Database error during auth:', error);
@@ -71,7 +63,12 @@ const handler = NextAuth({
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Her zaman anasayfaya yönlendir
+      // If URL is provided and starts with baseUrl, use it
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+      
+      // Otherwise redirect to home page
       return baseUrl + '/';
     },
   },

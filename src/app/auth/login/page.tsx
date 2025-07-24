@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Lock, Mail, LogIn, AlertCircle } from 'lucide-react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -23,22 +23,23 @@ export default function LoginPage() {
     setError('');
 
     try {
-      console.log('Login attempt with:', { email: form.email, password: '***' });
-      
       const result = await signIn('credentials', {
         email: form.email,
         password: form.password,
         redirect: false, // Don't redirect automatically
       });
 
-      console.log('SignIn result:', result);
-
       if (result?.error) {
         setError('Geçersiz email veya şifre');
-        console.error('Login error:', result.error);
       } else if (result?.ok) {
-        console.log('Login successful, redirecting...');
-        router.push('/');
+        // Get session to check user role
+        const session = await getSession();
+        
+        if (session?.user?.role === 'ADMIN') {
+          router.push('/admin');
+        } else {
+          router.push('/');
+        }
         router.refresh();
       }
     } catch (err) {
@@ -52,18 +53,17 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">Giriş Yap</h1>
-        
-        {/* Test kullanıcısı bilgisi */}
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
-          <p className="font-medium text-blue-800">Test Kullanıcısı:</p>
-          <p className="text-blue-600">Email: onuryasar@test.com</p>
-          <p className="text-blue-600">Şifre: 123</p>
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <LogIn className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Giriş Yap</h1>
+          <p className="text-gray-600 mt-2">Hesabınıza giriş yapın</p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-red-600" />
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
             <span className="text-red-700 text-sm">{error}</span>
           </div>
         )}
@@ -71,7 +71,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              E-posta
+              E-posta Adresi
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -83,11 +83,12 @@ export default function LoginPage() {
                 onChange={handleChange}
                 required
                 disabled={loading}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
-                placeholder="E-posta adresiniz"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 transition-colors"
+                placeholder="ornek@email.com"
               />
             </div>
           </div>
+          
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               Şifre
@@ -102,11 +103,12 @@ export default function LoginPage() {
                 onChange={handleChange}
                 required
                 disabled={loading}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
-                placeholder="Şifreniz"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 transition-colors"
+                placeholder="••••••••"
               />
             </div>
           </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -125,11 +127,14 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-        <div className="mt-6 text-center text-sm text-gray-600">
-          Hesabınız yok mu?{' '}
-          <Link href="/auth/register" className="text-blue-600 hover:underline">
-            Kayıt Ol
-          </Link>
+
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-600">
+            Hesabınız yok mu?{' '}
+            <Link href="/auth/register" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+              Kayıt Ol
+            </Link>
+          </p>
         </div>
       </div>
     </div>
