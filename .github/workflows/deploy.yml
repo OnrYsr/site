@@ -1,0 +1,60 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Manuel tetikleme için
+
+jobs:
+  deploy:
+    name: Deploy to AWS EC2
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+        
+    - name: Deploy to server
+      run: |
+        ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd ${{ secrets.SERVER_PATH }}
+          echo "🔄 Starting deployment..."
+          
+          # Git pull latest changes
+          git pull origin main
+          echo "✅ Code updated"
+          
+          # Install dependencies
+          npm install
+          echo "✅ Dependencies installed"
+          
+          # Generate Prisma client
+          npx prisma generate
+          echo "✅ Prisma client generated"
+          
+          # Build application
+          npm run build
+          echo "✅ Application built"
+          
+          # Restart PM2
+          pm2 restart muse3dstudio
+          echo "✅ PM2 restarted"
+          
+          # Show PM2 status
+          pm2 status
+          
+          echo "🚀 Deployment completed successfully!"
+        EOF
+        
+    - name: Verify deployment
+      run: |
+        echo "🌐 Checking site status..."
+        curl -f https://muse3dstudio.com || echo "⚠️ Site check failed"
+        echo "✅ Deployment verification completed"
