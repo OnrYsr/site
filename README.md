@@ -397,7 +397,7 @@ curl -I http://localhost:3000
 ```env
 # .env (Production sunucuda)
 DATABASE_URL="postgresql://postgres:@localhost:5432/muse3dstudio"
-NEXTAUTH_URL="http://51.20.32.9:3000"
+NEXTAUTH_URL="http://16.171.140.155:3000"
 NEXTAUTH_SECRET="muse3dstudio-production-secret-2024"
 NODE_ENV="production"
 ```

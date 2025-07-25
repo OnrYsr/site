@@ -20,6 +20,14 @@
     "setup:nginx": "chmod +x scripts/setup-nginx.sh && sudo ./scripts/setup-nginx.sh",
     "deploy:full": "npm install && npm run build && pm2 start ecosystem.config.js && pm2 save",
     "deploy:update": "git pull && npm install && npm run build && pm2 restart muse3dstudio",
+    "test:setup": "cp env.test.example .env.test",
+    "test:db:create": "createdb muse3dstudio_test",
+    "test:db:push": "DATABASE_URL=postgresql://postgres:@localhost:5432/muse3dstudio_test npx prisma db push",
+    "test:db:seed": "DATABASE_URL=postgresql://postgres:@localhost:5432/muse3dstudio_test npm run db:seed:products",
+    "test:db:reset": "DATABASE_URL=postgresql://postgres:@localhost:5432/muse3dstudio_test npx prisma db push --force-reset && npm run test:db:seed",
+    "test:dev": "cp .env.test .env && npm run dev",
+    "test:build": "cp .env.test .env && npm run build && npm start",
+    "test:full": "npm run test:setup && npm run test:db:create && npm run test:db:push && npm run test:db:seed && npm run test:dev",
     "postinstall": "prisma generate"
   },
   "dependencies": {
