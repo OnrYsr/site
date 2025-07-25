@@ -19,9 +19,21 @@ function generateSlug(name: string): string {
     .replace(/-+/g, '-');
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const homepage = searchParams.get('homepage');
+    
+    // Base where condition
+    const whereCondition: any = {};
+    
+    // If homepage=true parameter is passed, only show categories with showOnHomepage=true
+    if (homepage === 'true') {
+      whereCondition.showOnHomepage = true;
+    }
+    
     const categories = await prisma.category.findMany({
+      where: whereCondition,
       include: {
         subcategories: {
           where: {
@@ -122,7 +134,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, description, image, parentId, displayOrder, isActive } = await request.json();
+    const { name, description, image, parentId, displayOrder, isActive, showOnHomepage } = await request.json();
 
     // Validation
     if (!name?.trim()) {
@@ -174,7 +186,8 @@ export async function POST(request: NextRequest) {
         image: image?.trim() || null,
         parentId: parentId || null,
         displayOrder: orderValue,
-        isActive: isActive !== undefined ? isActive : true
+        isActive: isActive !== undefined ? isActive : true,
+        showOnHomepage: showOnHomepage !== undefined ? showOnHomepage : false
       },
       include: {
         subcategories: {

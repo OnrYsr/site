@@ -51,6 +51,7 @@ model Category {
   parentId    String?  // Alt kategori için üst kategori ID'si
   displayOrder Int     @default(0) // Gösterim sırası
   isActive    Boolean  @default(true)
+  showOnHomepage Boolean @default(false) // Anasayfada göster
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

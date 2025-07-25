@@ -23,7 +23,8 @@ export default function NewCategoryPage() {
     image: '',
     parentId: '',
     displayOrder: 0,
-    isActive: true
+    isActive: true,
+    showOnHomepage: false
   });
 
   const [errors, setErrors] = useState<{[key: string]: string}>({});
@@ -84,7 +85,8 @@ export default function NewCategoryPage() {
           image: formData.image.trim() || null,
           displayOrder: parseInt(formData.displayOrder.toString()) || 0,
           parentId: formData.parentId || null,
-          isActive: formData.isActive
+          isActive: formData.isActive,
+          showOnHomepage: formData.showOnHomepage
         }),
       });
 
@@ -266,6 +268,21 @@ export default function NewCategoryPage() {
             />
             <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">
               Kategori aktif olsun
+            </label>
+          </div>
+
+          {/* Show on Homepage */}
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="showOnHomepage"
+              name="showOnHomepage"
+              checked={formData.showOnHomepage}
+              onChange={handleChange}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="showOnHomepage" className="ml-2 text-sm text-gray-700">
+              Anasayfada göster
             </label>
           </div>
 

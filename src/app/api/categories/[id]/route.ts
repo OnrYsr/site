@@ -121,7 +121,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const { name, description, image, parentId, displayOrder, isActive } = await request.json();
+    const { name, description, image, parentId, displayOrder, isActive, showOnHomepage } = await request.json();
 
     // Check if category exists
     const existingCategory = await prisma.category.findUnique({
@@ -202,8 +202,9 @@ export async function PUT(
         description: description?.trim() || null,
         image: image?.trim() || null,
         parentId: parentId || null,
-                  displayOrder: orderValue,
-        isActive: isActive !== undefined ? isActive : true
+        displayOrder: orderValue,
+        isActive: isActive !== undefined ? isActive : true,
+        showOnHomepage: showOnHomepage !== undefined ? showOnHomepage : false
       },
       include: {
         parent: {
