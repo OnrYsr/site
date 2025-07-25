@@ -397,10 +397,37 @@ curl -I http://localhost:3000
 ```env
 # .env (Production sunucuda)
 DATABASE_URL="postgresql://postgres:@localhost:5432/muse3dstudio"
-NEXTAUTH_URL="http://51.20.32.9:3000"
+NEXTAUTH_URL="http://16.171.34.240:3000"
 NEXTAUTH_SECRET="muse3dstudio-production-secret-2024"
 NODE_ENV="production"
 ```
+
+#### **🧪 Test Environment (Aktif):**
+```env
+# Test Environment (Port 3001)
+NEXTAUTH_URL="http://16.171.34.240:3001"
+DATABASE_URL="postgresql://postgres:postgres123@localhost:5432/muse3dstudio_test"
+NODE_ENV="development"
+PORT=3001
+```
+
+**Test URL'leri:**
+- **Test Site**: http://16.171.34.240:3001
+- **Test Admin**: http://16.171.34.240:3001/admin
+
+#### **🗄️ PostgreSQL Remote Access (Aktif):**
+```
+Host: 16.171.34.240
+Port: 5432
+Username: postgres
+Password: postgres123
+
+Databases:
+- muse3dstudio (Production)
+- muse3dstudio_test (Test)
+```
+
+**pgAdmin/DBeaver ile bağlanabilirsiniz!**
 
 #### **Çözüldü ✅ Yaygın Sorunlar:**
 - **Next.js production build eksik** → `npm run build`

@@ -10,7 +10,7 @@ Bu rehber Muse3DStudio'yu 15 dakikada AWS EC2'ye deploy etmenizi sağlar.
 
 ### AWS EC2'ye SSH Bağlan
 ```bash
-ssh -i your-key.pem ubuntu@51.20.32.9
+ssh -i your-key.pem ubuntu@16.171.34.240
 # Production Instance: i-03e2a3280eb227ff5
 ```
 
@@ -52,13 +52,13 @@ sudo ./scripts/setup-nginx.sh
 pm2 status
 
 # Site erişimi
-curl http://56.228.30.48
-curl http://56.228.30.48/api/products
+curl http://16.171.34.240
+curl http://16.171.34.240/api/products
 ```
 
 ### Admin Paneli Test
 ```
-URL: http://56.228.30.48/admin
+URL: http://16.171.34.240/admin
 NOT: İlk admin kullanıcısını kayıt ol sayfasından oluşturun
 Sonra veritabanında role ADMIN yapın
 ```
@@ -72,7 +72,7 @@ Sonra veritabanında role ADMIN yapın
 DATABASE_URL="postgresql://muse3dstudio_user:Muse3DStudio2024!@localhost:5432/muse3dstudio"
 
 # Server IP'ni yaz
-NEXTAUTH_URL="http://56.228.30.48"
+NEXTAUTH_URL="http://16.171.34.240"
 
 # Güçlü bir secret key oluştur
 NEXTAUTH_SECRET="$(openssl rand -base64 32)"
@@ -96,10 +96,10 @@ pm2 restart muse3dstudio
 
 Kurulum sonrası erişim:
 
-- **Ana Site**: http://56.228.30.48/
-- **Admin Panel**: http://56.228.30.48/admin  
-- **API Docs**: http://56.228.30.48/api/products
-- **IoT Dashboard**: http://56.228.30.48/iot (varsa)
+- **Ana Site**: http://16.171.34.240/
+- **Admin Panel**: http://16.171.34.240/admin  
+- **API Docs**: http://16.171.34.240/api/products
+- **IoT Dashboard**: http://16.171.34.240/iot (varsa)
 
 ## ⚠️ Troubleshooting
 
