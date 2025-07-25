@@ -14,7 +14,7 @@
 /coverage
 
 # next.js
-# /.next/  # Commented out for t3.micro deployment strategy
+/.next/
 /out/
 
 # production
