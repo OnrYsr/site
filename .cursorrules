@@ -1,0 +1,272 @@
+# Muse3DStudio - E-Commerce Platform Rules
+
+## Project Overview
+- **Stack**: Next.js 15 (App Router), TypeScript, Tailwind CSS 4, Prisma, PostgreSQL
+- **Architecture**: Full-stack e-commerce platform with admin panel
+- **Auth**: NextAuth.js with role-based access control
+- **Database**: PostgreSQL with Prisma ORM
+
+## 🏗️ Architecture & File Organization
+
+### Folder Structure
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # Backend API endpoints
+│   ├── admin/             # Admin panel pages
+│   ├── (public)/          # Public pages (auth, products, etc.)
+│   └── globals.css        # Global styles
+├── components/            # Reusable React components
+│   ├── ui/                # Base UI components
+│   ├── layout/            # Layout components (Header, Footer)
+│   ├── forms/             # Form components
+│   └── [feature]/         # Feature-specific components
+├── lib/                   # Utility functions and configurations
+├── hooks/                 # Custom React hooks
+├── types/                 # TypeScript type definitions
+└── utils/                 # Helper functions
+```
+
+### Component Organization Rules
+- **One component per file** with PascalCase naming
+- **Feature-based grouping** over file-type grouping
+- **Index files** for clean exports from component folders
+- **Co-locate** related files (component, styles, tests, types)
+
+## 🎯 TypeScript Best Practices
+
+### Type Definitions
+- **Define interfaces** for all API responses and request bodies
+- **Use Prisma types** for database models, extend when needed
+- **Avoid any types** - use unknown or proper typing
+- **Export types** from dedicated type files in `/types` folder
+
+### Naming Conventions
+```typescript
+// Interfaces and Types - PascalCase with descriptive names
+interface UserProfileData {}
+type CategoryWithProducts = Category & { products: Product[] }
+
+// Components - PascalCase
+export default function ProductCard() {}
+
+// Functions - camelCase with action verbs
+async function fetchUserOrders() {}
+
+// Constants - SCREAMING_SNAKE_CASE
+const API_ENDPOINTS = {}
+
+// Files - kebab-case or PascalCase for components
+product-card.tsx or ProductCard.tsx
+```
+
+## 🔌 API Design Patterns
+
+### REST API Standards
+- **Consistent response format**:
+```typescript
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+  meta?: {
+    page?: number;
+    total?: number;
+    count?: number;
+  };
+}
+```
+
+### Error Handling
+- **Use try-catch** in all API routes
+- **Return appropriate HTTP status codes**
+- **Log errors** with context information
+- **Never expose internal errors** to client
+
+### Security Rules
+- **Validate all inputs** using Zod schemas
+- **Sanitize user inputs** before database operations
+- **Check authentication** for protected routes
+- **Implement role-based access control**
+- **Use environment variables** for sensitive data
+
+## 🗃️ Database & Prisma Guidelines
+
+### Schema Design
+- **Use descriptive model names** (PascalCase)
+- **Use camelCase for field names**
+- **Add proper indexes** for frequently queried fields
+- **Use enums** for fixed value sets
+- **Add timestamps** (createdAt, updatedAt) to all models
+
+### Query Patterns
+- **Use select** to limit returned fields when possible
+- **Include related data** strategically to avoid N+1 problems
+- **Use transactions** for multi-step operations
+- **Implement pagination** for list endpoints
+- **Add proper error handling** for database operations
+
+## ⚛️ React Component Guidelines
+
+### Component Structure
+```typescript
+// 1. Imports (external first, then internal)
+import React, { useState, useEffect } from 'react';
+import { Product } from '@/types/product';
+
+// 2. Type definitions
+interface ProductCardProps {
+  product: Product;
+  onAddToCart?: (product: Product) => void;
+}
+
+// 3. Component implementation
+export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
+  // 4. State and hooks
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // 5. Event handlers
+  const handleAddToCart = () => {
+    setIsLoading(true);
+    onAddToCart?.(product);
+    setIsLoading(false);
+  };
+
+  // 6. Render
+  return (
+    <div className="product-card">
+      {/* Component content */}
+    </div>
+  );
+}
+```
+
+### State Management
+- **Use local state** for component-specific data
+- **Lift state up** when shared between components
+- **Use React Query/SWR** for server state management
+- **Consider Context API** for global app state
+
+## 🎨 Styling Guidelines
+
+### Tailwind CSS Rules
+- **Use utility-first approach**
+- **Create component classes** for repeated patterns
+- **Use semantic class names** for complex components
+- **Maintain consistent spacing** using Tailwind scale
+- **Use design tokens** for colors, fonts, shadows
+
+### Responsive Design
+- **Mobile-first approach** (start with mobile styles)
+- **Use Tailwind breakpoints** consistently
+- **Test on multiple devices** and screen sizes
+- **Ensure accessibility** with proper contrast and focus states
+
+## 🔄 State & Data Flow
+
+### Data Fetching Patterns
+```typescript
+// Use SWR or React Query for data fetching
+const { data: products, error, isLoading } = useSWR(
+  '/api/products',
+  fetcher
+);
+
+// Handle loading and error states
+if (error) return <ErrorComponent />;
+if (isLoading) return <LoadingComponent />;
+```
+
+### Form Handling
+- **Use React Hook Form** for complex forms
+- **Implement client-side validation** with Zod
+- **Show loading states** during submission
+- **Handle errors gracefully** with user-friendly messages
+
+## 🔐 Authentication & Authorization
+
+### Auth Patterns
+- **Use NextAuth.js** for authentication
+- **Implement role-based access control**
+- **Protect API routes** with middleware
+- **Use TypeScript** for user session typing
+
+### Route Protection
+```typescript
+// For pages
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+
+// For API routes
+if (!session || session.user.role !== 'ADMIN') {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
+```
+
+## 📱 Performance Optimization
+
+### Loading & Performance
+- **Use Next.js Image optimization**
+- **Implement lazy loading** for components
+- **Optimize database queries** (select only needed fields)
+- **Use caching strategies** for static data
+- **Minimize bundle size** with dynamic imports
+
+### SEO Best Practices
+- **Use proper meta tags** in layout and page components
+- **Implement structured data** for products
+- **Use semantic HTML** elements
+- **Ensure fast loading times**
+
+## 🧪 Code Quality Standards
+
+### General Code Rules
+- **Write self-documenting code** with clear variable names
+- **Keep functions small** and focused on single responsibility
+- **Use early returns** to reduce nesting
+- **Add comments** for complex business logic only
+- **Remove dead code** and unused imports
+
+### Git Commit Standards
+```
+feat: add product search functionality
+fix: resolve authentication session timeout
+docs: update API documentation
+style: format code with prettier
+refactor: optimize database queries
+test: add unit tests for product service
+```
+
+### Environment Management
+- **Use environment variables** for configuration
+- **Never commit secrets** to repository
+- **Document required env vars** in README
+- **Use different configs** for dev/staging/production
+
+## 🔍 Testing Guidelines
+
+### Testing Strategy
+- **Unit tests** for utility functions
+- **Integration tests** for API routes
+- **Component tests** for React components
+- **E2E tests** for critical user flows
+
+## 📚 Documentation Rules
+
+### Code Documentation
+- **Document public APIs** and complex functions
+- **Keep README updated** with setup instructions
+- **Document deployment process**
+- **Maintain changelog** for version updates
+
+## 🚀 Deployment & DevOps
+
+### Production Readiness
+- **Use Docker** for containerization
+- **Implement health checks**
+- **Set up monitoring** and logging
+- **Use proper error tracking**
+- **Implement backup strategies**
+
+Remember: These rules should guide development decisions and maintain code consistency across the project. When in doubt, prioritize readability, maintainability, and performance. 

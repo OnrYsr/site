@@ -1,6 +1,64 @@
 # Muse3DStudio - 3D Ürünler E-Ticaret Platformu
 
-Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, TypeScript, Tailwind CSS ve PostgreSQL ile geliştirilmiştir.
+Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, TypeScript, Tailwind CSS, Prisma, PostgreSQL ve Docker ile geliştirilmiştir.
+
+## 🚀 Yeni Geliştirme Ortamı (Docker & Makefile)
+
+Proje, tek komutla kurulabilen, izole ve tutarlı bir geliştirme ortamı sağlamak için Docker ve Makefile kullanır.
+
+- **Tek Komutla Kurulum**: `make setup` ile tüm ortamı saniyeler içinde kurun.
+- **İzole Ortam**: Docker sayesinde, projenin tüm bağımlılıkları (PostgreSQL, Redis) container'lar içinde çalışır.
+- **Kolay Yönetim**: `Makefile` ile servisleri başlatma, durdurma, logları izleme ve veritabanını yönetme gibi işlemler basitleştirilmiştir.
+- **Detaylı Doküman**: Yeni geliştirme süreci için [DEV-WORKFLOW.md](DEV-WORKFLOW.md) dosyasına göz atın.
+
+---
+
+## ⚡ Hızlı Başlangıç
+
+### **Gereksinimler**
+- Docker & Docker Compose
+- Node.js 20+
+- `make` komutu (macOS ve Linux'ta varsayılan olarak bulunur)
+
+### **1. Projeyi Klonlayın**
+```bash
+git clone <repo-url>
+cd site
+```
+
+### **2. Tek Komutla Kurulum**
+Bu komut, tüm bağımlılıkları yükler, Docker servislerini başlatır ve veritabanını hazırlar.
+```bash
+make setup
+```
+
+### **3. Servislere Erişin**
+Kurulum tamamlandığında aşağıdaki adreslerden servislere ulaşabilirsiniz:
+- **Uygulama**: http://localhost:3000
+- **Admin Panel**: http://localhost:3000/admin
+- **Prisma Studio (Veritabanı Arayüzü)**: http://localhost:5555
+- **Sağlık Kontrolü (Health Check)**: http://localhost:3000/api/health
+
+## 🛠️ Temel Geliştirme Komutları
+
+Tüm komutları görmek için `make help` çalıştırın.
+```bash
+# Geliştirme ortamını başlat
+make dev
+
+# Geliştirme ortamını durdur
+make down
+
+# Uygulama loglarını izle
+make logs
+
+# Veritabanını sıfırla ve yeniden seed et
+make db-reset
+
+# Tüm ortamı temizle (container'lar, volume'ler)
+make clean
+```
+---
 
 ## 🌐 **LIVE PRODUCTION SITE**
 
@@ -9,566 +67,56 @@ Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, Type
 - **🔒 www Subdomain**: [https://www.muse3dstudio.com](https://www.muse3dstudio.com)
 - **⚙️ Admin Panel**: [https://muse3dstudio.com/admin](https://muse3dstudio.com/admin)
 
-### **🚀 Production Infrastructure:**
+### **🚀 Production Altyapısı:**
 - **☁️ Cloud Provider**: AWS EC2 (t3.micro)
-- **🖥️ Server OS**: Ubuntu 24.04 LTS
+- **🐳 Containerization**: Docker Compose
+- **🔄 Process Manager**: PM2 (Legacy - Yakında Docker'a geçirilecek)
+- **🗄️ Database**: PostgreSQL 16+
 - **🌐 Web Server**: Nginx (Reverse Proxy)
-- **🔄 Process Manager**: PM2 (Auto-restart, Auto-start)
-- **🗄️ Database**: PostgreSQL 14+
-- **🔒 SSL Certificate**: Let's Encrypt (Auto-renewal)
-- **📊 Uptime**: 99.9% (Auto-restart on failure, Auto-start on reboot)
-
-### **🛡️ Security & Performance:**
-- **HTTPS/SSL**: ✅ A+ Rating
-- **Domain Verification**: ✅ Active
-- **Auto HTTPS Redirect**: ✅ Enabled
-- **Security Headers**: ✅ Implemented
-- **Gzip Compression**: ✅ Enabled
-
-### **⚡ Deployment Strategy:**
-- **Build Strategy**: Local build → Git push → Server pull (t3.micro optimized)
-- **Zero Downtime**: PM2 auto-restart & health checks
-- **Auto Backup**: Database scheduled backups
-- **Monitoring**: PM2 real-time monitoring
+- **🔒 SSL Certificate**: Let's Encrypt
 
 ---
-
-## 📊 Sistemin Mevcut Durumu
-
-### ✅ **TAM FONKSİYONEL SİSTEMLER**
-
-#### 🔐 **Authentication & Kullanıcı Sistemi**
-- ✅ NextAuth.js entegrasyonu
-- ✅ Kullanıcı kayıt (email/şifre)
-- ✅ Giriş/çıkış sistemi
-- ✅ Session yönetimi
-- ✅ Role tabanlı yetkilendirme (USER/ADMIN)
-
-#### 📦 **Ürün Yönetim Sistemi**
-- ✅ Ürün listeleme (filtreleme, arama, sıralama)
-- ✅ Ürün detay sayfaları
-- ✅ Kategori bazlı filtreleme
-- ✅ Admin panel ürün CRUD (tam fonksiyonel)
-- ✅ Ürün resim yönetimi
-- ✅ Stok takibi
-- ✅ Aktif/pasif ürün durumu
-- ✅ Öne çıkan ürün sistemi
-- ✅ Öne çıkan ürünler carousel sistemi
-
-#### 🏷️ **Hiyerarşik Kategori Sistemi**
-- ✅ Ana kategori → Alt kategori yapısı
-- ✅ Kategori bazlı ürün filtreleme
-- ✅ Dinamik kategori navigation
-- ✅ Admin panel kategori CRUD (tam fonksiyonel)
-- ✅ Kategori sıralaması (displayOrder)
-- ✅ Ürün sayısı hesaplama (ana + alt kategoriler)
-
-#### 🎨 **Banner Yönetim Sistemi**
-- ✅ Dinamik banner sistemi (Hero + Featured Products)
-- ✅ Admin panel banner CRUD (tam fonksiyonel)
-- ✅ Banner type sistemi (HERO, FEATURED_PRODUCTS)
-- ✅ Otomatik banner rotasyonu (5s hero, 4s featured)
-- ✅ Manuel banner navigasyonu (ok butonları, dot göstergeleri)
-- ✅ Banner aktif/pasif durumu ve tarih aralığı kontrolü
-- ✅ Banner background entegrasyonu (Featured Products)
-- ✅ Responsive banner carousel sistemi
-
-#### 🎨 **Frontend & UI**
-- ✅ Responsive modern tasarım
-- ✅ Tailwind CSS ile styling
-- ✅ Component tabanlı mimari
-- ✅ Loading ve error state'leri
-- ✅ Mobile-first approach
-- ✅ SEO friendly URL yapısı
-- ✅ Framer Motion animasyonları
-- ✅ Carousel ve slider bileşenleri
-
-#### ⚙️ **Admin Panel**
-- ✅ Dashboard
-- ✅ Ürün yönetimi (CRUD, durum güncelleme, silme)
-- ✅ Kategori yönetimi (CRUD, hiyerarşik yapı)
-- ✅ Banner yönetimi (CRUD, type seçimi, tarih kontrolü)
-- ✅ Dinamik veri görüntüleme
-- ✅ Modern form tasarımları
-
-### 🚧 **SADECE UI VAR (Backend Eksik)**
-
-#### 🛒 **E-ticaret Core Özellikleri**
-- ❌ Sepet sistemi (UI var, API eksik)
-- ❌ Ödeme entegrasyonu (UI var, backend yok)
-- ❌ Sipariş yönetimi (UI var, API eksik)
-- ❌ Kullanıcı profil sayfaları (UI var, backend eksik)
-
-#### 🎯 **Admin Panel Eksikleri**
-- ❌ Kullanıcı yönetimi (UI var, CRUD API eksik)
-- ❌ Sipariş yönetimi (UI var, API eksik)
-- ❌ İstatistik dashboard'ları (UI var, veri eksik)
-
-### 💡 **TAMAMEN EKSİK OLAN ÖZELLİKLER**
-
-#### 🌟 **Ürün Özellikleri**
-- ❌ Ürün yorumları ve puanlama sistemi
-- ❌ Favori ürünler
-- ❌ Ürün karşılaştırma
-- ❌ İndirim sistemi (schema var, API eksik)
-
-#### 📧 **İletişim & Bildirimler**
-- ❌ Email sistemi
-- ❌ Push bildirimleri
-- ❌ İletişim formu backend'i
-
-#### 🔍 **Gelişmiş Özellikler**
-- ❌ Gelişmiş arama (ElasticSearch)
-- ❌ Ürün önerileri
-- ❌ Görsel upload sistemi
-- ❌ Çoklu dil desteği
-
-#### 🔒 **Production Hazırlığı**
-- ❌ Güvenlik middleware'leri
-- ❌ Rate limiting
-- ❌ Logging sistemi
-- ❌ Error tracking
-- ❌ Performance monitoring
 
 ## 🛠️ Teknoloji Stack'i
 
 ### **Frontend**
 - **Next.js 15** - React framework (App Router)
-- **TypeScript** - Type safety
-- **Tailwind CSS 4** - Modern styling
+- **TypeScript** - Tip güvenliği
+- **Tailwind CSS 4** - Modern stil aracı
 - **Lucide React** - İkon kütüphanesi
-- **Framer Motion** - Animasyonlar ve carousel'lar
-- **React Hook Form** - Form yönetimi
-- **Zod** - Schema validation
+- **Framer Motion** - Animasyonlar
+- **React Hook Form & Zod** - Form yönetimi ve validasyon
 
 ### **Backend**
 - **Next.js API Routes** - Backend API
-- **Prisma ORM** - Database ORM
+- **Prisma ORM** - Veritabanı ORM'i
 - **PostgreSQL** - Ana veritabanı
-- **NextAuth.js** - Authentication
-- **bcryptjs** - Password hashing
+- **NextAuth.js** - Kimlik doğrulama
+- **bcryptjs** - Şifre hash'leme
 
-### **Development Tools**
-- **ESLint** - Code linting
-- **TypeScript** - Type checking
-- **Git** - Version control
-- **Prisma Studio** - Database GUI
+### **Altyapı & Geliştirme Araçları**
+- **Docker & Docker Compose** - Container yönetimi
+- **Makefile** - Geliştirme otomasyonu
+- **ESLint** - Kod linting
+- **Prisma Studio** - Veritabanı GUI
+- **tsx** - Gelişmiş TypeScript çalıştırıcısı
 
 ## 📁 Proje Yapısı
 
+Proje yapısı hakkında detaylı bilgi ve geliştirme kuralları için `.cursorrules` dosyasına göz atın.
 ```
 src/
-├── app/                    # Next.js App Router
-│   ├── api/               # Backend API endpoints
-│   │   ├── auth/          # ✅ Authentication (LOGIN/REGISTER)
-│   │   ├── categories/    # ✅ Kategori CRUD (tam fonksiyonel)
-│   │   ├── products/      # ✅ Ürün API'ları (tam fonksiyonel)
-│   │   ├── banners/       # ✅ Banner CRUD & Active API (tam fonksiyonel)
-│   │   └── admin/         # ✅ Admin API'ları
-│   │       └── products/  # ✅ Admin ürün CRUD
-│   ├── admin/             # ✅ Admin Panel (kategori+ürün+banner fonksiyonel)
-│   │   ├── categories/    # ✅ Kategori yönetimi (CRUD)
-│   │   ├── products/      # ✅ Ürün yönetimi (CRUD)
-│   │   ├── banners/       # ✅ Banner yönetimi (CRUD, type sistemi)
-│   │   ├── users/         # 🚧 UI var, API eksik
-│   │   └── orders/        # 🚧 UI var, API eksik
-│   ├── auth/              # ✅ Login/Register sayfaları
-│   ├── products/          # ✅ Ürün listeleme ve detay
-│   ├── cart/              # 🚧 UI var, backend eksik
-│   ├── checkout/          # 🚧 UI var, backend eksik
-│   └── profile/           # 🚧 UI var, backend eksik
-├── components/            # ✅ React bileşenleri
-│   ├── home/              # ✅ Ana sayfa bileşenleri (Hero, Featured Products)
-│   ├── layout/            # ✅ Header, Footer
-│   ├── products/          # ✅ Ürün bileşenleri
-│   └── providers/         # ✅ Context providers
-├── prisma/                # ✅ Database schema & migrations
-└── types/                 # ✅ TypeScript tip tanımları
+├── app/                    # Next.js App Router (API, Admin, Public sayfalar)
+├── components/             # Tekrar kullanılabilir React bileşenleri
+├── prisma/                 # Veritabanı şeması, migration ve seed dosyaları
+└── types/                  # TypeScript tip tanımları
 ```
-
-## 📦 Kurulum
-
-### **Gereksinimler**
-- Node.js 18+
-- PostgreSQL 14+
-- npm veya yarn
-
-### **1. Projeyi Klonlayın**
-```bash
-git clone <repo-url>
-cd site
-```
-
-### **2. Bağımlılıkları Yükleyin**
-```bash
-npm install
-```
-
-### **3. Çevre Değişkenlerini Ayarlayın**
-`.env` dosyasını oluşturun:
-```env
-# Database
-DATABASE_URL="postgresql://postgres:password@localhost:5432/muse3dstudio"
-
-# NextAuth
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-super-secret-nextauth-key-here-1234567890"
-
-# App
-NODE_ENV="development"
-```
-
-### **4. Veritabanını Hazırlayın**
-```bash
-# PostgreSQL'i başlatın
-brew services start postgresql@14  # macOS
-# sudo service postgresql start    # Linux
-
-# Veritabanı şemasını oluşturun
-npx prisma db push
-
-# Örnek ürün verilerini ekleyin
-npx ts-node prisma/seed-products.ts
-```
-
-### **5. Geliştirme Sunucusunu Başlatın**
-```bash
-npm run dev
-```
-
-🌐 **Site**: http://localhost:3000  
-🔧 **Admin Panel**: http://localhost:3000/admin  
-🗄️ **Prisma Studio**: `npx prisma studio`
-
-## 🧪 Örnek Veriler
-
-### **Mevcut Veriler**
-- **4 Ana Kategori**: Ev Dekorasyon, Mutfak, Günlük Yaşam & Hediyelik
-- **1 Alt Kategori**: Raf Kitap Tutucu (Ev Dekorasyon altında)
-- **1 Örnek Ürün**: Dinazor Kitap Ayracı
-
-### **İlk Admin Kullanıcısı Oluşturma**
-
-#### **Yöntem 1: Hardcode Admin (Önerilen)**
-```bash
-# Admin kullanıcısı oluştur (muse3dstudio@outlook.com)
-npm run db:seed:admin
-
-# Credentials:
-# Email: muse3dstudio@outlook.com  
-# Password: 27486399oO*
-# Role: ADMIN
-```
-
-#### **Yöntem 2: Manuel Kayıt**
-- Siteye gidin ve `/auth/register` sayfasından kayıt olun
-- İlk kayıt olan kullanıcıyı admin yapmak için veritabanında `role` alanını `ADMIN` olarak güncelleyin
-
-## 🎯 Öncelikli Geliştirme Planı
-
-### **🔥 Acil Öncelik (Hafta 1-2)**
-1. **Sepet Sistemi Backend**
-   - Cart API endpoints (/api/cart)
-   - Session/localStorage entegrasyonu
-   - Sepet ürün yönetimi
-
-2. **Sipariş Sistemi Backend**
-   - Order API endpoints (/api/orders)
-   - Admin sipariş yönetimi
-   - Sipariş durumu takibi
-
-### **⚡ Yüksek Öncelik (Hafta 3-4)**
-3. **Ödeme Entegrasyonu**
-   - Payment provider entegrasyonu
-   - Checkout süreci
-   - Fatura sistemi
-
-4. **Kullanıcı Profil Sistemi**
-   - Profil API endpoints
-   - Adres yönetimi
-   - Sipariş geçmişi
-
-### **📈 Orta Öncelik (Ay 2)**
-5. **Admin Panel Tamamlama**
-   - Banner CRUD API
-
-## 🚀 Production Deployment
-
-### **Production Sunucu Kurulumu**
-
-#### **1. Environment Variables Ayarlama**
-Production sunucuda `.env` dosyasını doğru ayarlayın:
-```env
-# Muse3DStudio Production Environment Variables
-
-# Database
-DATABASE_URL="postgresql://muse3dstudio_user:your_strong_password@localhost:5432/muse3dstudio"
-
-# NextAuth  
-NEXTAUTH_URL="http://your-server-ip:3000"
-NEXTAUTH_SECRET="your-super-secret-nextauth-key-here-change-this-in-production"
-
-# App Environment
-NODE_ENV="production"
-```
-
-#### **2. Production Build**
-```bash
-# Proje dizinine gidin
-cd /var/www/muse3dstudio
-
-# Bağımlılıkları yükleyin
-npm install
-
-# Production build oluşturun
-npm run build
-
-# PM2 logs dizinini oluşturun
-mkdir -p logs
-```
-
-#### **3. PM2 ile Başlatma**
-```bash
-# PM2 ile başlatın
-pm2 start ecosystem.config.js
-
-# Otomatik başlatma ayarlayın
-pm2 startup
-pm2 save
-```
-
-### **🔧 Troubleshooting**
-
-#### **Problem: Sürekli Restart Oluyor**
-```bash
-# 1. PM2 status kontrol edin
-pm2 status
-
-# 2. Restart sayısı yüksekse, logs kontrol edin
-pm2 logs muse3dstudio --lines 50
-
-# 3. Port çakışması kontrol edin
-ss -tlnp | grep :3000
-
-# 4. Çakışan process'leri durdurun
-kill [PID_NUMBER]
-
-# 5. PM2'yi restart edin
-pm2 restart muse3dstudio
-```
-
-#### **Problem: Build Hatası**
-```bash
-# 1. Node modules temizleyin
-rm -rf node_modules package-lock.json
-
-# 2. Yeniden yükleyin
-npm install
-
-# 3. Build tekrar deneyin
-npm run build
-```
-
-#### **Problem: Database Bağlantı Hatası**
-```bash
-# 1. PostgreSQL çalışıyor mu kontrol edin
-sudo systemctl status postgresql
-
-# 2. Database URL kontrol edin
-echo $DATABASE_URL
-
-# 3. Veritabanı erişim test edin
-npx prisma db push
-```
-
-#### **Problem: Login Çalışmıyor (Session Sorunu)**
-```bash
-# 1. NEXTAUTH_SECRET değişimi sonrası session'lar geçersiz olur
-# 2. Browser cache temizleyin
-# 3. Incognito/Private window deneyin
-# 4. Database kullanıcı kontrolü:
-sudo -u postgres psql muse3dstudio -c "SELECT email, role FROM users;"
-
-# 5. Database connection test:
-curl -I http://localhost:3000
-```
-
-#### **Working Production Environment:**
-```env
-# .env (Production sunucuda)
-DATABASE_URL="postgresql://postgres:@localhost:5432/muse3dstudio"
-NEXTAUTH_URL="http://16.171.34.240:3000"
-NEXTAUTH_SECRET="muse3dstudio-production-secret-2024"
-NODE_ENV="production"
-```
-
-#### **🧪 Test Environment (Aktif):**
-```env
-# Test Environment (Port 3001)
-NEXTAUTH_URL="http://16.171.34.240:3001"
-DATABASE_URL="postgresql://postgres:postgres123@localhost:5432/muse3dstudio_test"
-NODE_ENV="development"
-PORT=3001
-```
-
-**Test URL'leri:**
-- **Test Site**: http://16.171.34.240:3001
-- **Test Admin**: http://16.171.34.240:3001/admin
-
-#### **🗄️ PostgreSQL Remote Access (Aktif):**
-```
-Host: 16.171.34.240
-Port: 5432
-Username: postgres
-Password: postgres123
-
-Databases:
-- muse3dstudio (Production)
-- muse3dstudio_test (Test)
-```
-
-**pgAdmin/DBeaver ile bağlanabilirsiniz!**
-
-#### **Çözüldü ✅ Yaygın Sorunlar:**
-- **Next.js production build eksik** → `npm run build`
-- **Port 3000 çakışması** → Manuel process'leri `kill` edin
-- **Environment variables yanlış** → `.env` dosyasını düzeltin
-- **PM2 logs dizini yok** → `mkdir -p logs`
-- **Login session sorunu** → Browser cache temizle + NEXTAUTH_SECRET değişimi
-   - Kullanıcı yönetimi API
-   - İstatistik dashboard'ları
-
-6. **Ürün Özellikleri**
-   - Yorum sistemi
-   - Favori ürünler
-   - İndirim sistemi
-
-### **🚀 Gelecek Özellikler**
-7. **Production Hazırlığı**
-   - Güvenlik middleware'leri
-   - Error tracking
-   - Performance optimizasyonu
-
-8. **Gelişmiş Özellikler**
-   - Görsel upload sistemi
-   - Gelişmiş arama
-   - Çoklu dil desteği
-
-## 🗄️ Veritabanı Şeması
-
-### **Mevcut Tablolar (✅ API Hazır)**
-- `users` - Kullanıcılar
-- `categories` - Hiyerarşik kategoriler
-- `products` - Ürünler
-- `banners` - Site banner'ları (Hero & Featured Products)
-
-### **Tanımlı Tablolar (❌ API Eksik)**
-- `cart_items` - Sepet öğeleri
-- `orders` - Siparişler
-- `order_items` - Sipariş öğeleri
-- `addresses` - Kullanıcı adresleri
-- `reviews` - Ürün yorumları
-- `discounts` - İndirimler
-
-## 🚀 Deploy
-
-### **⚡ Hızlı Deploy (AWS EC2)**
-```bash
-# 15 dakikada hazır!
-curl -sL https://raw.githubusercontent.com/your-username/site/main/scripts/setup-server.sh | sudo bash
-cd /var/www/muse3dstudio && git clone https://github.com/your-username/site.git .
-npm install && npm run db:setup-production && npm run build
-pm2 start ecosystem.config.js && sudo ./scripts/setup-nginx.sh
-```
-
-**📖 Detaylı rehber:** [QUICK-START.md](./QUICK-START.md) | [DEPLOY.md](./DEPLOY.md)
-
-### **Alternatif: Vercel Deploy**
-```bash
-# 1. Vercel'e deploy edin
-vercel
-
-# 2. Environment variables ayarlayın:
-# DATABASE_URL=<production-db-url>
-# NEXTAUTH_URL=<your-domain>
-# NEXTAUTH_SECRET=<random-secret>
-```
-
-## 🎯 Mevcut Eksiklikler & Öneriler
-
-### **⚠️ Kritik Eksiklikler**
-1. **E-ticaret Temel Özellikleri**
-   - Sepet ve ödeme sistemi eksik
-   - Sipariş yönetimi eksik
-   - Kullanıcı profil sistemi eksik
-
-2. **Güvenlik**
-   - Rate limiting yok
-   - Input validation eksik
-   - CSRF koruması eksik
-
-3. **Production Hazırlığı**
-   - Error handling eksik
-   - Logging sistemi yok
-   - Performance monitoring yok
-
-### **🔧 Teknik İyileştirmeler**
-1. **API Geliştirmeleri**
-   - Pagination eksik
-   - API documentation yok
-   - Error response standartları
-
-2. **Frontend İyileştirmeleri**
-   - Loading skeleton'ları
-   - Optimistic updates
-   - Infinite scroll
-
-3. **Database Optimizasyonu**
-   - İndeks optimizasyonu
-   - Query optimizasyonu
-   - Connection pooling
-
-## 📋 Geliştirme Checklist
-
-### **Hemen Yapılması Gerekenler**
-- [ ] Sepet API endpoints (/api/cart)
-- [ ] Sipariş API endpoints (/api/orders)
-- [ ] Kullanıcı profil API (/api/user/profile)
-- [ ] Admin sipariş yönetimi
-- [ ] Ödeme entegrasyonu
-
-### **Kısa Vadede Yapılması Gerekenler**
-- [ ] Kullanıcı yönetimi API
-- [ ] Yorum sistemi
-- [ ] Email sistemi
-- [ ] İndirim sistemi
-
-### **Uzun Vadede Yapılması Gerekenler**
-- [ ] Görsel upload sistemi
-- [ ] Gelişmiş arama
-- [ ] Performance optimizasyonu
-- [ ] Güvenlik sıkılaştırması
-- [ ] Çoklu dil desteği
-
-## 📞 İletişim & Katkıda Bulunma
-
-1. Repository'yi fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add amazing feature'`)
-4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
-5. Pull Request açın
-
 ---
 
-## 📄 Lisans
+## 🎯 Sonraki Adımlar
 
-Bu proje MIT lisansı altında lisanslanmıştır.
-
-**Proje Durumu**: 🚀 Aktif Geliştirme  
-**Versiyon**: v4.0 - Tam Fonksiyonel Banner Management Sistemi  
-**Son Güncelleme**: Ocak 2025
-
-
-## 🚀 **OTOMATIK DEPLOY AKTİFreset --hard origin/main* 
-✅ GitHub Actions ile otomatik deployment çalışıyor  
-📅 Test tarihi: 24/07/2025 11:29
+1.  **Production Ortamını Docker'a Geçirme**: Sunucudaki PM2 tabanlı sistemi tamamen Docker Compose ile değiştirmek.
+2.  **CI/CD Pipeline**: GitHub Actions ile otomatik test ve deployment süreçleri oluşturmak.
+3.  **Test Altyapısı**: Jest ve React Testing Library ile unit/integration testleri, Cypress ile E2E testleri eklemek.
+4.  **Gelişmiş Özellikler**: Sepet, ödeme, ürün yorumları gibi eksik e-ticaret özelliklerini tamamlamak.
+5.  **Monitoring**: Sentry gibi araçlarla hata takibi ve performans izleme eklemek.

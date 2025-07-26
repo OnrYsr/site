@@ -9,8 +9,8 @@
     "lint": "next lint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:seed:products": "ts-node prisma/seed-products.ts",
-    "db:seed:admin": "ts-node prisma/seed-admin.ts",
+    "db:seed:products": "tsx prisma/seed-products.ts",
+    "db:seed:admin": "tsx prisma/seed-admin.ts",
     "db:seed": "npm run db:seed:products",
     "make:admin": "node scripts/make-admin.js",
     "create:admin": "node scripts/create-admin.js",
@@ -20,6 +20,17 @@
     "setup:nginx": "chmod +x scripts/setup-nginx.sh && sudo ./scripts/setup-nginx.sh",
     "deploy:full": "npm install && npm run build && pm2 start ecosystem.config.js && pm2 save",
     "deploy:update": "git pull && npm install && npm run build && pm2 restart muse3dstudio",
+    "docker:dev": "docker-compose up -d",
+    "docker:dev:build": "docker-compose up -d --build",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f app",
+    "docker:logs:all": "docker-compose logs -f",
+    "docker:clean": "docker-compose down -v --remove-orphans && docker system prune -f",
+    "docker:db:reset": "docker-compose down postgres && docker volume rm site_postgres_data && docker-compose up -d postgres",
+    "docker:prod": "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d",
+    "docker:prod:build": "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build",
+    "docker:tools": "docker-compose --profile tools up -d",
+    "docker:studio": "docker-compose run --rm prisma-studio",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -50,6 +61,7 @@
     "eslint-config-next": "15.3.4",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
     "typescript": "^5"
   }
 }

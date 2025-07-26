@@ -11,37 +11,43 @@ async function main() {
       name: 'Mimari Modeller',
       slug: 'mimari-modeller',
       description: 'Bina ve yapı tasarımları',
-      isActive: true
+      isActive: true,
+      showOnHomepage: true
     },
     {
       name: 'Karakter Modelleri',
       slug: 'karakter-modelleri',
       description: 'İnsan ve hayvan karakterleri',
-      isActive: true
+      isActive: true,
+      showOnHomepage: true
     },
     {
       name: 'Araç Modelleri',
       slug: 'arac-modelleri',
       description: 'Otomobil ve araç tasarımları',
-      isActive: true
+      isActive: true,
+      showOnHomepage: true
     },
     {
       name: 'Mobilya Modelleri',
       slug: 'mobilya-modelleri',
       description: 'Ev ve ofis mobilyaları',
-      isActive: true
+      isActive: true,
+      showOnHomepage: true
     },
     {
       name: 'Elektronik Modeller',
       slug: 'elektronik-modeller',
       description: 'Cihaz ve elektronik ürünler',
-      isActive: true
+      isActive: true,
+      showOnHomepage: true
     },
     {
       name: 'Doğa Modelleri',
       slug: 'doga-modelleri',
       description: 'Bitki ve doğa objeleri',
-      isActive: true
+      isActive: true,
+      showOnHomepage: true
     }
   ];
 
