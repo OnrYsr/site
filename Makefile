@@ -165,3 +165,51 @@ info: ## Show project information
 	@echo "  make studio    - Open Prisma Studio"
 	@echo "  make db-reset  - Reset database"
 	@echo "  make clean     - Clean everything" 
+
+## Production Sync
+sync-from-prod: ## Sync database from production server
+	@echo "$(GREEN)Syncing database from production...$(RESET)"
+	@echo "$(YELLOW)⚠️  This will replace your local database with production data$(RESET)"
+	@read -p "Enter production database URL (or press Enter to use env): " PROD_DB_URL; \
+	if [ -z "$$PROD_DB_URL" ]; then \
+		PROD_DB_URL=$$(grep PRODUCTION_DATABASE_URL .env.local 2>/dev/null | cut -d '=' -f2- | tr -d '"') || \
+		PROD_DB_URL=$$(grep DATABASE_URL_PROD .env.local 2>/dev/null | cut -d '=' -f2- | tr -d '"'); \
+	fi; \
+	if [ -z "$$PROD_DB_URL" ]; then \
+		echo "$(RED)❌ Production database URL not found!$(RESET)"; \
+		echo "$(YELLOW)Please add PRODUCTION_DATABASE_URL to .env.local$(RESET)"; \
+		exit 1; \
+	fi; \
+	make _sync-database PROD_URL="$$PROD_DB_URL"
+
+_sync-database: ## Internal: sync database with given URL
+	@echo "$(GREEN)Creating production dump...$(RESET)"
+	@docker-compose exec postgres pg_dump "$(PROD_URL)" --no-owner --no-acl --clean --if-exists > /tmp/prod_dump.sql
+	@echo "$(GREEN)Restoring to local database...$(RESET)"
+	@docker-compose exec -T postgres psql -U postgres -d muse3dstudio < /tmp/prod_dump.sql
+	@rm /tmp/prod_dump.sql
+	@echo "$(GREEN)✓ Production data synced successfully$(RESET)"
+
+dump-local: ## Create backup of local database
+	@echo "$(GREEN)Creating local database dump...$(RESET)"
+	@mkdir -p backups
+	@docker-compose exec postgres pg_dump -U postgres muse3dstudio > backups/local_$(shell date +%Y%m%d_%H%M%S).sql
+	@echo "$(GREEN)✓ Local backup created in backups/$(RESET)"
+
+restore-from-backup: ## Restore database from backup file
+	@echo "$(GREEN)Available backups:$(RESET)"
+	@ls -la backups/*.sql 2>/dev/null || echo "$(YELLOW)No backups found$(RESET)"
+	@read -p "Enter backup filename (from backups/): " BACKUP_FILE; \
+	if [ -f "backups/$$BACKUP_FILE" ]; then \
+		echo "$(GREEN)Restoring from backups/$$BACKUP_FILE...$(RESET)"; \
+		docker-compose exec -T postgres psql -U postgres -d muse3dstudio < "backups/$$BACKUP_FILE"; \
+		echo "$(GREEN)✓ Database restored$(RESET)"; \
+	else \
+		echo "$(RED)❌ Backup file not found$(RESET)"; \
+	fi
+
+auto-sync: ## Auto-sync with production (scheduled)
+	@echo "$(GREEN)Setting up auto-sync from production...$(RESET)"
+	@echo "$(YELLOW)This will sync every 6 hours automatically$(RESET)"
+	@(crontab -l 2>/dev/null; echo "0 */6 * * * cd $(PWD) && make sync-from-prod >/dev/null 2>&1") | crontab -
+	@echo "$(GREEN)✓ Auto-sync configured (every 6 hours)$(RESET)" 
