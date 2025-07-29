@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import { useState } from 'react';
-import { LayoutDashboard, Package, Tag, Image, Users, ShoppingBag, Settings, LogOut, User, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { LayoutDashboard, Package, Tag, Image, Users, ShoppingBag, Settings, LogOut, User, Loader2, LogIn } from 'lucide-react';
 
 const menu = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -22,9 +22,58 @@ function AdminLogin() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rateLimit, setRateLimit] = useState<{
+    isBlocked: boolean;
+    blockType: 'IP' | 'EMAIL' | null;
+    resetMinutes: number;
+  }>({
+    isBlocked: false,
+    blockType: null,
+    resetMinutes: 0
+  });
+  const [countdown, setCountdown] = useState(0);
+
+  // Countdown timer for blocked users
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (rateLimit.isBlocked && countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            // Reset rate limit when countdown reaches 0
+            setRateLimit({
+              isBlocked: false,
+              blockType: null,
+              resetMinutes: 0
+            });
+            setError('');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [rateLimit.isBlocked, countdown]);
+
+  const formatCountdown = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Don't allow submission if blocked
+    if (rateLimit.isBlocked) {
+      return;
+    }
+    
     setLoading(true);
     setError('');
 
@@ -36,7 +85,35 @@ function AdminLogin() {
       });
 
       if (result?.error) {
-        setError('Geçersiz email veya şifre');
+        // Parse rate limiting errors
+        if (result.error.includes('IP_BLOCKED:')) {
+          const minutes = parseInt(result.error.split(':')[1]);
+          setRateLimit({
+            isBlocked: true,
+            blockType: 'IP',
+            resetMinutes: minutes
+          });
+          setCountdown(minutes * 60);
+          setError(`IP adresiniz ${minutes} dakika boyunca engellendi. Çok fazla başarısız deneme yapıldı.`);
+        } else if (result.error.includes('EMAIL_BLOCKED:')) {
+          const minutes = parseInt(result.error.split(':')[1]);
+          setRateLimit({
+            isBlocked: true,
+            blockType: 'EMAIL',
+            resetMinutes: minutes
+          });
+          setCountdown(minutes * 60);
+          setError(`Bu email adresi için ${minutes} dakika boyunca giriş engellendi. Çok fazla başarısız deneme yapıldı.`);
+        } else {
+          setError('Geçersiz email veya şifre');
+        }
+      } else if (result?.ok) {
+        // Reset any rate limiting on successful login
+        setRateLimit({
+          isBlocked: false,
+          blockType: null,
+          resetMinutes: 0
+        });
       }
     } catch (error) {
       setError('Giriş yapılırken bir hata oluştu');
@@ -47,83 +124,114 @@ function AdminLogin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Admin Panel
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Yönetim paneline erişmek için giriş yapın
-          </p>
+      <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Settings className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Admin Girişi</h1>
+          <p className="text-gray-600 mt-2">Yönetici paneline erişim</p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
+
+        {/* Rate Limit Warning */}
+        {rateLimit.isBlocked && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-5 h-5 text-red-600 flex-shrink-0">🛡️</div>
+              <span className="text-red-700 font-medium">Güvenlik Koruması Aktif</span>
+            </div>
+            <div className="text-red-700 text-sm mb-3">{error}</div>
+            {countdown > 0 && (
+              <div className="flex items-center gap-2 text-red-600">
+                <div className="w-4 h-4">⏰</div>
+                <span className="text-sm font-mono">
+                  Kalan süre: {formatCountdown(countdown)}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Regular Error Messages */}
+        {error && !rateLimit.isBlocked && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+            <div className="w-5 h-5 text-red-600 flex-shrink-0">⚠️</div>
+            <span className="text-red-700 text-sm">{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div>
+            <label htmlFor="admin-email" className="block text-sm font-medium text-gray-700 mb-2">
+              Admin Email
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
-                id="email"
-                name="email"
+                id="admin-email"
                 type="email"
-                autoComplete="email"
-                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email adresinizi girin"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Şifre
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
+                disabled={loading || rateLimit.isBlocked}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                placeholder="admin@example.com"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Şifrenizi girin"
               />
             </div>
           </div>
-
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
-            </div>
-          )}
 
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Giriş yapılıyor...
-                </>
-              ) : (
-                'Giriş Yap'
-              )}
-            </button>
+            <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700 mb-2">
+              Şifre
+            </label>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5">🔒</div>
+              <input
+                id="admin-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading || rateLimit.isBlocked}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                placeholder="••••••••"
+                required
+              />
+            </div>
           </div>
 
-          <div className="text-center">
-            <div className="text-sm text-gray-600">
-              Demo Admin: <strong>muse3dstudio@outlook.com</strong>
-            </div>
-            <div className="text-sm text-gray-600">
-              Şifre: <strong>27486399oO*</strong>
-            </div>
-          </div>
+          <button
+            type="submit"
+            disabled={loading || rateLimit.isBlocked}
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Giriş yapılıyor...
+              </>
+            ) : rateLimit.isBlocked ? (
+              <>
+                <div className="w-5 h-5">🛡️</div>
+                Engellendi
+              </>
+            ) : (
+              <>
+                <LogIn className="w-5 h-5" />
+                Admin Girişi
+              </>
+            )}
+          </button>
         </form>
+
+        {/* Security Info */}
+        <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center gap-2 text-blue-700 text-xs">
+            <div className="w-4 h-4">🛡️</div>
+            <span>
+              Admin Güvenlik: 5 yanlış deneme sonrası IP engeli, 3 yanlış deneme sonrası email engeli
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

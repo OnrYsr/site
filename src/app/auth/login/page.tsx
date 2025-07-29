@@ -1,24 +1,76 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { Lock, Mail, LogIn, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Lock, Mail, LogIn, AlertCircle, Clock, Shield } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+
+interface RateLimitInfo {
+  isBlocked: boolean;
+  blockType: 'IP' | 'EMAIL' | null;
+  resetMinutes: number;
+  remainingAttempts?: number;
+}
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rateLimit, setRateLimit] = useState<RateLimitInfo>({
+    isBlocked: false,
+    blockType: null,
+    resetMinutes: 0
+  });
+  const [countdown, setCountdown] = useState(0);
   const router = useRouter();
+
+  // Countdown timer for blocked users
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (rateLimit.isBlocked && countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            // Reset rate limit when countdown reaches 0
+            setRateLimit({
+              isBlocked: false,
+              blockType: null,
+              resetMinutes: 0
+            });
+            setError('');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [rateLimit.isBlocked, countdown]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError(''); // Clear error when user types
   };
 
+  const formatCountdown = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Don't allow submission if blocked
+    if (rateLimit.isBlocked) {
+      return;
+    }
+    
     setLoading(true);
     setError('');
 
@@ -30,8 +82,35 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError('Geçersiz email veya şifre');
+        // Parse rate limiting errors
+        if (result.error.includes('IP_BLOCKED:')) {
+          const minutes = parseInt(result.error.split(':')[1]);
+          setRateLimit({
+            isBlocked: true,
+            blockType: 'IP',
+            resetMinutes: minutes
+          });
+          setCountdown(minutes * 60);
+          setError(`IP adresiniz ${minutes} dakika boyunca engellendi. Çok fazla başarısız deneme yapıldı.`);
+        } else if (result.error.includes('EMAIL_BLOCKED:')) {
+          const minutes = parseInt(result.error.split(':')[1]);
+          setRateLimit({
+            isBlocked: true,
+            blockType: 'EMAIL',
+            resetMinutes: minutes
+          });
+          setCountdown(minutes * 60);
+          setError(`Bu email adresi için ${minutes} dakika boyunca giriş engellendi. Çok fazla başarısız deneme yapıldı.`);
+        } else {
+          setError('Geçersiz email veya şifre');
+        }
       } else if (result?.ok) {
+        // Reset any rate limiting on successful login
+        setRateLimit({
+          isBlocked: false,
+          blockType: null,
+          resetMinutes: 0
+        });
         // Redirect all users to home page
         // Admin panel can be accessed separately via /admin URL
         router.push('/');
@@ -56,7 +135,27 @@ export default function LoginPage() {
           <p className="text-gray-600 mt-2">Hesabınıza giriş yapın</p>
         </div>
 
-        {error && (
+        {/* Rate Limit Warning */}
+        {rateLimit.isBlocked && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center gap-3 mb-2">
+              <Shield className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <span className="text-red-700 font-medium">Güvenlik Koruması Aktif</span>
+            </div>
+            <div className="text-red-700 text-sm mb-3">{error}</div>
+            {countdown > 0 && (
+              <div className="flex items-center gap-2 text-red-600">
+                <Clock className="w-4 h-4" />
+                <span className="text-sm font-mono">
+                  Kalan süre: {formatCountdown(countdown)}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Regular Error Messages */}
+        {error && !rateLimit.isBlocked && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
             <span className="text-red-700 text-sm">{error}</span>
@@ -66,39 +165,41 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              E-posta Adresi
+              Email Adresi
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
-                type="email"
                 id="email"
                 name="email"
+                type="email"
+                autoComplete="email"
+                required
                 value={form.email}
                 onChange={handleChange}
-                required
-                disabled={loading}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 transition-colors"
-                placeholder="ornek@email.com"
+                disabled={loading || rateLimit.isBlocked}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                placeholder="email@example.com"
               />
             </div>
           </div>
-          
+
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               Şifre
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
-                type="password"
                 id="password"
                 name="password"
+                type="password"
+                autoComplete="current-password"
+                required
                 value={form.password}
                 onChange={handleChange}
-                required
-                disabled={loading}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 transition-colors"
+                disabled={loading || rateLimit.isBlocked}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="••••••••"
               />
             </div>
@@ -106,13 +207,18 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || rateLimit.isBlocked}
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Giriş Yapılıyor...
+                Giriş yapılıyor...
+              </>
+            ) : rateLimit.isBlocked ? (
+              <>
+                <Shield className="w-5 h-5" />
+                Engellendi
               </>
             ) : (
               <>
@@ -123,11 +229,11 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-8 text-center">
+        <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Hesabınız yok mu?{' '}
-            <Link href="/auth/register" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
-              Kayıt Ol
+            <Link href="/auth/register" className="text-blue-600 hover:text-blue-700 font-medium">
+              Kayıt olun
             </Link>
           </p>
         </div>

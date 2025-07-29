@@ -2,6 +2,12 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { 
+  checkIPRateLimit, 
+  checkEmailRateLimit, 
+  resetRateLimits, 
+  getClientIP 
+} from '@/lib/redis';
 
 const prisma = new PrismaClient();
 
@@ -13,12 +19,36 @@ const handler = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
         try {
+          // Get client IP
+          const clientIP = getClientIP(req as any);
+          
+          // Check IP rate limit
+          const ipLimit = await checkIPRateLimit(clientIP);
+          if (!ipLimit.allowed) {
+            const resetMinutes = Math.ceil((ipLimit.resetTime - Date.now()) / (1000 * 60));
+            throw new Error(`IP_BLOCKED:${resetMinutes}`);
+          }
+
+          // Check email rate limit
+          const emailLimit = await checkEmailRateLimit(credentials.email);
+          if (!emailLimit.allowed) {
+            const resetMinutes = Math.ceil((emailLimit.resetTime - Date.now()) / (1000 * 60));
+            throw new Error(`EMAIL_BLOCKED:${resetMinutes}`);
+          }
+
+          // Add progressive delay
+          const delay = Math.max(ipLimit.delaySeconds, emailLimit.delaySeconds);
+          if (delay > 0) {
+            await new Promise(resolve => setTimeout(resolve, delay * 1000));
+          }
+
+          // Check user credentials
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
           });
@@ -27,6 +57,9 @@ const handler = NextAuth({
             const passwordMatch = await bcrypt.compare(credentials.password, user.password);
             
             if (passwordMatch) {
+              // Reset rate limits on successful login
+              await resetRateLimits(clientIP, credentials.email);
+              
               return { 
                 id: user.id, 
                 name: user.name || '', 
@@ -36,9 +69,21 @@ const handler = NextAuth({
             }
           }
           
-          return null;
+          // Invalid credentials - rate limits already incremented
+          throw new Error('INVALID_CREDENTIALS');
+          
         } catch (error) {
-          console.error('Database error during auth:', error);
+          console.error('Auth error:', error);
+          
+          // Re-throw rate limit errors
+          if (error instanceof Error && error.message.startsWith('IP_BLOCKED:')) {
+            throw error;
+          }
+          if (error instanceof Error && error.message.startsWith('EMAIL_BLOCKED:')) {
+            throw error;
+          }
+          
+          // For other errors, just return null (invalid credentials)
           return null;
         }
       },
