@@ -47,10 +47,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
+      target: production
     container_name: muse3d_app
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/muse3dstudio
       - REDIS_URL=redis://redis:6379
       - NEXTAUTH_URL=http://localhost:3000
@@ -70,7 +70,7 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
-    command: npm run dev
+    command: npm start
 
   # Prisma Studio (Database GUI)
   prisma-studio:
