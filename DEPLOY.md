@@ -1,252 +1,325 @@
-# 🚀 Muse3DStudio AWS EC2 Deploy Rehberi
+# 🚀 Muse3DStudio - Production Deployment Guide
 
-**✅ PRODUCTION DEPLOYMENT BAŞARILI!**
+**Full-stack Next.js e-commerce platform with Docker deployment**
 
-## 🌐 **Live Production Site**
-- **🔒 Ana Site**: [https://muse3dstudio.com](https://muse3dstudio.com)
-- **🔒 www Subdomain**: [https://www.muse3dstudio.com](https://www.muse3dstudio.com)
-- **⚙️ Admin Panel**: [https://muse3dstudio.com/admin](https://muse3dstudio.com/admin)
+## 🏗️ Architecture Overview
 
-## 📊 **Aktif Production Stack**
-- **☁️ AWS EC2**: t3.micro (1 vCPU, 1GB RAM) - `i-03e2a3280eb227ff5`
-- **🌐 Domain**: muse3dstudio.com (GoDaddy + DNS)
-- **🔒 SSL**: Let's Encrypt (Auto-renewal aktif)
-- **🖥️ OS**: Ubuntu 24.04 LTS
-- **🔄 Process Manager**: PM2 (Auto-restart enabled)
-- **🌐 Web Server**: Nginx (HTTPS redirect enabled)
-- **🗄️ Database**: PostgreSQL 14 (12 tablo aktif)
+- **Frontend**: Next.js 15 with App Router
+- **Backend**: Next.js API Routes
+- **Database**: PostgreSQL with Prisma ORM
+- **Cache**: Redis
+- **Deployment**: Docker Compose
+- **Proxy**: Nginx
+- **Process Management**: Docker containers with auto-restart
 
 ---
 
-Bu rehber Muse3DStudio e-ticaret projesini AWS EC2'ye deploy etmek için hazırlanmıştır.
+## 📋 Prerequisites
 
-## 📋 Sistem Gereksinimleri
+### Server Requirements
+- **OS**: Ubuntu 20.04+ / Debian 11+ / CentOS 8+
+- **RAM**: Minimum 2GB, Recommended 4GB+
+- **Storage**: Minimum 10GB free space
+- **CPU**: 2+ cores recommended
 
-### AWS EC2 Instance
-- **Minimum**: t3.micro (1 vCPU, 1 GB RAM)
-- **Önerilen**: t3.small (2 vCPU, 2 GB RAM)
-- **OS**: Ubuntu 20.04+ / Amazon Linux 2
+### Required Software
+- Docker & Docker Compose
+- Git
+- Make (optional, for convenience)
 
-### Açılması Gereken Portlar (Security Group)
-```
-22    (SSH)  - Yönetim erişimi
-80    (HTTP) - Web erişimi
-443   (HTTPS)- SSL erişimi (opsiyonel)
-3000  (HTTP) - Next.js direct erişimi (test için geçici)
-5432  (PostgreSQL) - Database (sadece localhost)
-```
+---
 
-## 🛠️ Otomatik Kurulum
+## 🚀 Quick Deployment
 
-### 1. Repo Clone ve Setup
+### 1. Server Setup
+
 ```bash
-# EC2'ye SSH bağlan
-ssh -i your-key.pem ubuntu@your-ec2-ip
+# Update system
+sudo apt update && sudo apt upgrade -y
 
-# Proje dizini oluştur
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Install Make (optional)
+sudo apt install -y make
+
+# Logout and login again to apply docker group
+logout
+```
+
+### 2. Project Setup
+
+```bash
+# Create project directory
 sudo mkdir -p /var/www/muse3dstudio
 sudo chown $USER:$USER /var/www/muse3dstudio
 cd /var/www/muse3dstudio
 
-# Repo clone et
-git clone https://github.com/OnrYsr/site.git .
+# Clone project (or upload files)
+git clone <your-repository-url> .
+# OR upload files via scp/rsync
 
-# Kurulum scriptini çalıştır
-chmod +x scripts/setup-server.sh
-sudo ./scripts/setup-server.sh
-```
-
-### 2. Environment Variables Ayarla
-```bash
-# .env dosyasını oluştur
+# Copy environment file
 cp env.production.example .env
+```
+
+### 3. Environment Configuration
+
+Edit the `.env` file:
+
+```bash
 nano .env
-
-# Aşağıdaki değerleri güncelle:
-# - DATABASE_URL (PostgreSQL connection string)
-# - NEXTAUTH_URL (https://muse3dstudio.com)
-# - NEXTAUTH_SECRET (strong random string)
-
-# Production environment example:
-# DATABASE_URL="postgresql://muse3dstudio_user:Muse3DStudio2024!@localhost:5432/muse3dstudio"
-# NEXTAUTH_URL="https://muse3dstudio.com"
-# NEXTAUTH_SECRET="muse3d-super-secret-production-key-2024"
-# NODE_ENV="production"
 ```
 
-### 3. Database Setup
-```bash
-# Database oluştur ve seed et
-npm run db:setup-production
+Required environment variables:
+```env
+NODE_ENV=production
+DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/muse3dstudio
+REDIS_URL=redis://redis:6379
+NEXTAUTH_URL=http://your-server-ip:3000
+NEXTAUTH_SECRET=your-super-secret-key-here
 ```
 
-### 4. Build ve Start
-```bash
-# Production build
-npm run build
-
-# PM2 ile başlat
-pm2 start ecosystem.config.js
-pm2 save
-pm2 startup
-```
-
-## 🌐 Nginx Reverse Proxy Setup
-
-Nginx konfigürasyonu `/etc/nginx/sites-available/muse3dstudio` dosyasında:
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;  # Domain veya IP
-
-    # Muse3DStudio Ana Site
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-
-    # Mevcut IoT Dashboard (eğer var ise)
-    location /iot {
-        proxy_pass http://localhost:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # Static files cache
-    location /static {
-        alias /var/www/muse3dstudio/.next/static;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-}
-```
-
-Nginx'i enable et:
-```bash
-sudo ln -s /etc/nginx/sites-available/muse3dstudio /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-## 📊 Monitoring ve Log'lar
-
-### PM2 Monitoring
-```bash
-pm2 status          # Uygulama durumu
-pm2 logs muse3dstudio   # Uygulama logları
-pm2 monit          # Real-time monitoring
-pm2 restart muse3dstudio # Uygulamayı restart et
-```
-
-### System Logs
-```bash
-# Nginx logs
-sudo tail -f /var/log/nginx/access.log
-sudo tail -f /var/log/nginx/error.log
-
-# System resources
-htop
-df -h
-free -h
-```
-
-### Database Backup
-```bash
-# PostgreSQL backup
-pg_dump muse3dstudio > backup_$(date +%Y%m%d_%H%M%S).sql
-
-# Otomatik backup script (crontab'a ekle)
-0 2 * * * pg_dump muse3dstudio > /var/backups/muse3dstudio_$(date +\%Y\%m\%d).sql
-```
-
-## 🔄 Update/Deploy Workflow
-
-### Kod güncellemesi için:
-```bash
-cd /var/www/muse3dstudio
-git pull origin main
-npm install
-npm run build
-pm2 restart muse3dstudio
-```
-
-### Database migration için:
-```bash
-npm run db:push
-pm2 restart muse3dstudio
-```
-
-## 🔒 SSL Certificate (Let's Encrypt)
+### 4. Start Production Environment
 
 ```bash
-# Certbot kurulumu
-sudo apt install certbot python3-certbot-nginx
+# Using Make (recommended)
+make prod-build
 
-# SSL certificate al
-sudo certbot --nginx -d your-domain.com
-
-# Auto-renewal test
-sudo certbot renew --dry-run
+# Or using Docker Compose directly
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
-## 🎯 Test URL'leri
+### 5. Database Setup
 
-Kurulum sonrası test URL'leri:
+```bash
+# Wait for services to start (30 seconds)
+sleep 30
 
-- **Ana Site**: http://your-ip/
-- **Admin Panel**: http://your-ip/admin
-- **API Health**: http://your-ip/api/products
-- **Direct Next.js**: http://your-ip:3000
+# Setup database
+make prod-db-setup
 
-## ⚠️ Troubleshooting
+# Or manually
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec app npm run db:push
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec app npm run db:seed
+```
 
-### Common Issues:
+### 6. Create Admin User
 
-1. **Port 3000 already in use**
-   ```bash
-   sudo lsof -ti:3000 | xargs sudo kill -9
-   ```
-
-2. **Permission denied for PostgreSQL**
-   ```bash
-   sudo -u postgres psql
-ALTER USER muse3dstudio_user CREATEDB;
-   ```
-
-3. **Nginx 502 Bad Gateway**
-   ```bash
-   # Check if Next.js is running
-   pm2 status
-   # Check Nginx config
-   sudo nginx -t
-   ```
-
-4. **Out of memory (t3.micro)**
-   ```bash
-   # Enable swap
-   sudo fallocate -l 1G /swapfile
-   sudo chmod 600 /swapfile
-   sudo mkswap /swapfile
-   sudo swapon /swapfile
-   ```
-
-## 📞 Support
-
-Sorun yaşarsanız:
-1. PM2 loglarını kontrol edin: `pm2 logs`
-2. Nginx loglarını kontrol edin: `sudo tail -f /var/log/nginx/error.log`
-3. System resources: `htop`, `df -h`, `free -h`
+```bash
+# Create admin user
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec app npm run create:admin
+```
 
 ---
 
-**🎉 Başarılı deploy sonrası siteniz hazır!** 
+## 🔧 Management Commands
+
+### Using Make Commands
+
+```bash
+# View all available commands
+make help
+
+# Production deployment
+make prod-build                 # Build and start production
+make prod-down                  # Stop production services
+make prod-db-setup             # Setup production database
+
+# Monitoring
+make status                    # Check service status
+make logs                      # View app logs
+make health                    # Check application health
+
+# Remote server management (set SERVER_IP and SERVER_USER env vars)
+export SERVER_IP=your-server-ip
+export SERVER_USER=ubuntu
+
+make server-status             # Check remote server status
+make server-logs               # View remote server logs
+make server-restart            # Restart remote services
+make deploy-quick              # Quick deployment (code only)
+make deploy-server             # Full deployment
+```
+
+### Using Docker Compose Directly
+
+```bash
+# Start production
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+# Stop services
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml down
+
+# View logs
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs -f app
+
+# Check status
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml ps
+
+# Restart services
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml restart
+```
+
+---
+
+## 🌐 Access Your Application
+
+After successful deployment:
+
+- **Website**: `http://your-server-ip`
+- **Admin Panel**: `http://your-server-ip/admin`
+- **API Health Check**: `http://your-server-ip/api/health`
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### 1. Services Not Starting
+```bash
+# Check container logs
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs
+
+# Check specific service
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs app
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs nginx
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs postgres
+```
+
+#### 2. Database Connection Issues
+```bash
+# Check database status
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec postgres pg_isready -U postgres
+
+# Reset database
+make db-reset
+```
+
+#### 3. Application Not Accessible
+```bash
+# Check nginx status
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec nginx nginx -t
+
+# Check if ports are open
+netstat -tlnp | grep :80
+netstat -tlnp | grep :3000
+
+# Check firewall
+sudo ufw status
+```
+
+#### 4. Port Already in Use
+```bash
+# Stop conflicting services
+sudo systemctl stop nginx apache2
+
+# Or change ports in docker-compose.prod.yml
+```
+
+### Health Checks
+
+```bash
+# Application health
+curl http://localhost/api/health
+
+# Database health
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec postgres pg_isready
+
+# Service status
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml ps
+```
+
+---
+
+## 🔄 Updates & Maintenance
+
+### Quick Code Updates
+
+```bash
+# On your local machine
+export SERVER_IP=your-server-ip
+export SERVER_USER=ubuntu
+make deploy-quick
+```
+
+### Full Deployment
+
+```bash
+# On your local machine
+export SERVER_IP=your-server-ip
+export SERVER_USER=ubuntu
+make deploy-server
+```
+
+### Manual Update Process
+
+```bash
+# On server
+cd /var/www/muse3dstudio
+
+# Pull latest code
+git pull
+
+# Restart services
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml restart app
+
+# Or rebuild if needed
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build app
+```
+
+---
+
+## 📊 Monitoring
+
+### Container Status
+```bash
+make status
+# or
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml ps
+```
+
+### Application Logs
+```bash
+make logs
+# or
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs -f app
+```
+
+### Resource Usage
+```bash
+docker stats
+```
+
+### Health Status
+```bash
+make health
+# or
+curl http://your-server-ip/api/health
+```
+
+---
+
+## 🔒 Security Considerations
+
+1. **Change default passwords** in environment variables
+2. **Use strong NEXTAUTH_SECRET** (generate with `openssl rand -base64 32`)
+3. **Set up SSL certificates** for HTTPS (Let's Encrypt recommended)
+4. **Configure firewall** to allow only necessary ports
+5. **Regular backups** of database
+6. **Keep system updated** with security patches
+
+---
+
+## 🎉 Success!
+
+Your Muse3DStudio e-commerce platform is now running in production! 
+
+For additional help, check the logs or open an issue in the project repository. 

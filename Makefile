@@ -213,3 +213,56 @@ auto-sync: ## Auto-sync with production (scheduled)
 	@echo "$(YELLOW)This will sync every 6 hours automatically$(RESET)"
 	@(crontab -l 2>/dev/null; echo "0 */6 * * * cd $(PWD) && make sync-from-prod >/dev/null 2>&1") | crontab -
 	@echo "$(GREEN)✓ Auto-sync configured (every 6 hours)$(RESET)" 
+
+## Production Deployment & Server Management
+deploy-server: ## Deploy to production server (requires SERVER_IP and SERVER_USER env vars)
+	@echo "$(GREEN)Deploying to production server...$(RESET)"
+	@if [ -z "$(SERVER_IP)" ]; then echo "$(RED)❌ SERVER_IP environment variable required$(RESET)"; exit 1; fi
+	@if [ -z "$(SERVER_USER)" ]; then echo "$(RED)❌ SERVER_USER environment variable required$(RESET)"; exit 1; fi
+	@echo "$(YELLOW)Deploying to $(SERVER_USER)@$(SERVER_IP)$(RESET)"
+	@rsync -avz --delete --exclude node_modules --exclude .git --exclude .env* . $(SERVER_USER)@$(SERVER_IP):/var/www/muse3dstudio/
+	@ssh $(SERVER_USER)@$(SERVER_IP) "cd /var/www/muse3dstudio && make prod-down && make prod-build && make prod-db-setup"
+	@echo "$(GREEN)✓ Deployment complete$(RESET)"
+
+deploy-quick: ## Quick deploy (only code changes, no rebuild)
+	@echo "$(GREEN)Quick deploying to production server...$(RESET)"
+	@if [ -z "$(SERVER_IP)" ]; then echo "$(RED)❌ SERVER_IP environment variable required$(RESET)"; exit 1; fi
+	@if [ -z "$(SERVER_USER)" ]; then echo "$(RED)❌ SERVER_USER environment variable required$(RESET)"; exit 1; fi
+	@rsync -avz --delete --exclude node_modules --exclude .git --exclude .env* . $(SERVER_USER)@$(SERVER_IP):/var/www/muse3dstudio/
+	@ssh $(SERVER_USER)@$(SERVER_IP) "cd /var/www/muse3dstudio && docker-compose -f docker-compose.yml -f docker-compose.prod.yml restart app nginx"
+	@echo "$(GREEN)✓ Quick deployment complete$(RESET)"
+
+server-status: ## Check production server status
+	@echo "$(GREEN)Checking production server status...$(RESET)"
+	@if [ -z "$(SERVER_IP)" ]; then echo "$(RED)❌ SERVER_IP environment variable required$(RESET)"; exit 1; fi
+	@if [ -z "$(SERVER_USER)" ]; then echo "$(RED)❌ SERVER_USER environment variable required$(RESET)"; exit 1; fi
+	@ssh $(SERVER_USER)@$(SERVER_IP) "cd /var/www/muse3dstudio && docker-compose -f docker-compose.yml -f docker-compose.prod.yml ps"
+
+server-logs: ## View production server logs
+	@echo "$(GREEN)Viewing production server logs...$(RESET)"
+	@if [ -z "$(SERVER_IP)" ]; then echo "$(RED)❌ SERVER_IP environment variable required$(RESET)"; exit 1; fi
+	@if [ -z "$(SERVER_USER)" ]; then echo "$(RED)❌ SERVER_USER environment variable required$(RESET)"; exit 1; fi
+	@ssh $(SERVER_USER)@$(SERVER_IP) "cd /var/www/muse3dstudio && docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs -f app"
+
+server-restart: ## Restart production services
+	@echo "$(GREEN)Restarting production services...$(RESET)"
+	@if [ -z "$(SERVER_IP)" ]; then echo "$(RED)❌ SERVER_IP environment variable required$(RESET)"; exit 1; fi
+	@if [ -z "$(SERVER_USER)" ]; then echo "$(RED)❌ SERVER_USER environment variable required$(RESET)"; exit 1; fi
+	@ssh $(SERVER_USER)@$(SERVER_IP) "cd /var/www/muse3dstudio && docker-compose -f docker-compose.yml -f docker-compose.prod.yml restart"
+	@echo "$(GREEN)✓ Services restarted$(RESET)"
+
+server-health: ## Check production server health
+	@echo "$(GREEN)Checking production server health...$(RESET)"
+	@if [ -z "$(SERVER_IP)" ]; then echo "$(RED)❌ SERVER_IP environment variable required$(RESET)"; exit 1; fi
+	@curl -f http://$(SERVER_IP)/api/health || echo "$(RED)Health check failed$(RESET)"
+
+prod-down: ## Stop production environment
+	@echo "$(RED)Stopping production environment...$(RESET)"
+	@docker-compose -f docker-compose.yml -f docker-compose.prod.yml down
+	@echo "$(GREEN)✓ Production environment stopped$(RESET)"
+
+prod-db-setup: ## Setup production database
+	@echo "$(GREEN)Setting up production database...$(RESET)"
+	@docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec app npm run db:push
+	@docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec app npm run db:seed
+	@echo "$(GREEN)✓ Production database setup complete$(RESET)" 
