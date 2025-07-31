@@ -1,4 +1,4 @@
-name: Deploy to Production
+name: Deploy to Raspberry Pi
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to AWS EC2
+    name: Deploy to Raspberry Pi Production
     runs-on: ubuntu-latest
     
     steps:
@@ -27,12 +27,12 @@ jobs:
       run: |
         ssh -i ~/.ssh/deploy_key -o ConnectTimeout=10 -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful'"
         
-    - name: Deploy to server
+    - name: Deploy to Raspberry Pi
       run: |
         ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
           set -e  # Exit on any error
           
-          echo "🔄 Starting deployment..."
+          echo "🚀 Starting Raspberry Pi deployment..."
           echo "📍 Working directory: $(pwd)"
           
           # Navigate to project directory
@@ -61,54 +61,65 @@ jobs:
           npx prisma generate
           echo "✅ Prisma client generated"
           
-          # Build application
-          echo "🔨 Building application..."
-          npm run build
-          echo "✅ Application built"
+          # Update systemd services if changed
+          echo "🔧 Updating systemd services..."
+          sudo cp systemd/muse3d-web.service /etc/systemd/system/ || echo "Service file not changed"
+          sudo cp systemd/cloudflare-tunnel.service /etc/systemd/system/ || echo "Tunnel service not changed"
+          sudo systemctl daemon-reload
+          echo "✅ Systemd services updated"
           
-          # Check PM2 status before restart
-          echo "📊 Current PM2 status:"
-          pm2 list || echo "PM2 not running any processes"
+          # Ensure Docker services are running
+          echo "🐳 Checking Docker services..."
+          sudo docker compose up -d postgres redis
+          echo "✅ Database services running"
           
-          # Stop and restart PM2 application
-          echo "🔄 Restarting PM2..."
-          pm2 stop muse3dstudio || echo "Process not running"
-          pm2 delete muse3dstudio || echo "Process not found"
-          pm2 start ecosystem.config.js
-          pm2 save
-          echo "✅ PM2 restarted"
+          # Restart web application service
+          echo "🔄 Restarting web application..."
+          sudo systemctl restart muse3d-web.service
+          echo "✅ Web service restarted"
           
-          # Wait a moment for the app to start
-          sleep 5
+          # Restart Cloudflare tunnel (if needed)
+          echo "🔗 Checking tunnel service..."
+          sudo systemctl restart cloudflare-tunnel.service
+          echo "✅ Tunnel service restarted"
           
-          # Show PM2 status
-          echo "📊 Final PM2 status:"
-          pm2 status
+          # Wait for services to be ready
+          echo "⏳ Waiting for services to start..."
+          sleep 15
+          
+          # Check service status
+          echo "📊 Service status:"
+          sudo systemctl is-active muse3d-web.service
+          sudo systemctl is-active cloudflare-tunnel.service
           
           # Check if the app is responding
-          echo "🌐 Testing local app response..."
-          curl -f http://localhost:3000 > /dev/null 2>&1 && echo "✅ App responding on port 3000" || echo "⚠️ App not responding on port 3000"
+          echo "🌐 Testing application health..."
+          curl -f http://localhost:3000/api/health > /dev/null 2>&1 && echo "✅ App healthy and responding" || echo "⚠️ Health check failed"
           
-          echo "🚀 Deployment completed successfully!"
+          echo "🎉 Raspberry Pi deployment completed successfully!"
         EOF
         
     - name: Verify deployment
       run: |
-        echo "🌐 Checking site status..."
+        echo "🌐 Verifying Raspberry Pi deployment..."
         
-        # Wait a bit more for the site to be fully ready
-        sleep 10
+        # Wait for services to be fully ready
+        sleep 20
         
-        # Check if site is responding
+        # Check if site is responding via domain
         response=$(curl -s -o /dev/null -w "%{http_code}" https://muse3dstudio.com || echo "000")
-        echo "📊 Site response code: $response"
+        echo "📊 Domain response code: $response"
         
-        if [ "$response" = "200" ]; then
-          echo "✅ Site is working perfectly!"
+        # Check health endpoint specifically
+        health_response=$(curl -s -o /dev/null -w "%{http_code}" https://muse3dstudio.com/api/health || echo "000")
+        echo "🏥 Health endpoint response: $health_response"
+        
+        if [ "$response" = "200" ] && [ "$health_response" = "200" ]; then
+          echo "✅ Raspberry Pi deployment successful! Site is live and healthy."
         elif [ "$response" = "502" ] || [ "$response" = "503" ]; then
-          echo "⚠️ Site is showing $response - backend might be starting up"
+          echo "⚠️ Site is showing $response - services might still be starting up"
         else
-          echo "❌ Site check failed with code: $response"
+          echo "❌ Deployment verification failed - response codes: site=$response, health=$health_response"
         fi
         
-        echo "✅ Deployment verification completed"
+        echo "🎉 Raspberry Pi deployment verification completed"

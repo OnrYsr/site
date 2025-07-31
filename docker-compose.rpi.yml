@@ -1,0 +1,311 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database - ARM optimized
+  postgres:
+    image: postgres:16-alpine
+    container_name: muse3d_postgres_rpi
+    environment:
+      POSTGRES_DB: muse3dstudio
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "127.0.0.1:5432:5432"  # Only localhost access
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+      - ./backups:/backups
+    networks:
+      - muse3d_network
+    restart: unless-stopped
+    # Raspberry Pi optimized PostgreSQL settings
+    command: >
+      postgres
+      -c max_connections=50
+      -c shared_buffers=128MB
+      -c effective_cache_size=512MB
+      -c maintenance_work_mem=32MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=8MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=100
+      -c work_mem=4MB
+      -c huge_pages=off
+      -c max_worker_processes=2
+      -c max_parallel_workers_per_gather=1
+      -c max_parallel_workers=2
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d muse3dstudio"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # Redis Cache - ARM optimized
+  redis:
+    image: redis:7-alpine
+    container_name: muse3d_redis_rpi
+    ports:
+      - "127.0.0.1:6379:6379"  # Only localhost access
+    volumes:
+      - redis_data:/data
+    networks:
+      - muse3d_network
+    restart: unless-stopped
+    # Raspberry Pi optimized Redis settings
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --tcp-keepalive 300
+      --timeout 300
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # Main Application - ARM compatible
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.rpi
+      target: production
+    container_name: muse3d_app_rpi
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@postgres:5432/muse3dstudio
+      - REDIS_URL=redis://redis:6379
+      - NEXTAUTH_URL=https://muse3dstudio.com
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - PORT=3000
+      - NODE_OPTIONS=--max-old-space-size=512
+    ports:
+      - "127.0.0.1:3000:3000"  # Only localhost access
+    volumes:
+      - app_uploads:/app/public/uploads
+      - app_cache:/app/.next/cache
+    networks:
+      - muse3d_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+        reservations:
+          memory: 512M
+
+  # Nginx Reverse Proxy with SSL
+  nginx:
+    image: nginx:alpine
+    container_name: muse3d_nginx_rpi
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.rpi.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/cache:/var/cache/nginx
+      - nginx_logs:/var/log/nginx
+    networks:
+      - muse3d_network
+    depends_on:
+      - app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  # Cloudflare Tunnel for external access
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: muse3d_tunnel
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - muse3d_network
+    restart: unless-stopped
+    depends_on:
+      - nginx
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 32M
+
+  # ESP32/IoT Projects Container
+  esp-services:
+    build:
+      context: ./esp-projects
+      dockerfile: Dockerfile
+    container_name: muse3d_esp_services
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@postgres:5432/muse3dstudio
+      - REDIS_URL=redis://redis:6379
+      - MQTT_BROKER=${MQTT_BROKER:-mqtt://localhost:1883}
+    ports:
+      - "127.0.0.1:3001:3001"  # ESP services API
+      - "1883:1883"  # MQTT broker
+      - "8883:8883"  # MQTT SSL
+    volumes:
+      - esp_data:/app/data
+      - ./esp-projects/config:/app/config:ro
+    networks:
+      - muse3d_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # Monitoring with Prometheus (lightweight for RPi)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: muse3d_prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'  # 7 days retention for RPi
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.wal-compression'
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - muse3d_network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: muse3d_grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    ports:
+      - "127.0.0.1:3002:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana:/etc/grafana/provisioning:ro
+    networks:
+      - muse3d_network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    profiles:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # Backup Service
+  backup:
+    image: alpine:latest
+    container_name: muse3d_backup
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres123}
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 2 * * *}  # Daily at 2 AM
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
+      - postgres_data:/var/lib/postgresql/data:ro
+    networks:
+      - muse3d_network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    command: |
+      sh -c "
+        apk add --no-cache postgresql-client dcron &&
+        echo '$${BACKUP_SCHEDULE} /usr/local/bin/backup.sh' | crontab - &&
+        crond -f
+      "
+    profiles:
+      - backup
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  app_uploads:
+    driver: local
+  app_cache:
+    driver: local
+  nginx_logs:
+    driver: local
+  esp_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  muse3d_network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1500 

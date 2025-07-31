@@ -265,4 +265,45 @@ prod-db-setup: ## Setup production database
 	@echo "$(GREEN)Setting up production database...$(RESET)"
 	@docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec app npm run db:push
 	@docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec app npm run db:seed
-	@echo "$(GREEN)✓ Production database setup complete$(RESET)" 
+	@echo "$(GREEN)✓ Production database setup complete$(RESET)"
+
+## Raspberry Pi Deployment
+rpi-setup: ## Setup Raspberry Pi from scratch
+	@echo "$(GREEN)Setting up Raspberry Pi...$(RESET)"
+	@./scripts/setup-rpi.sh
+	@echo "$(GREEN)✓ Raspberry Pi setup complete$(RESET)"
+
+rpi-deploy: ## Deploy to Raspberry Pi (requires SSH access)
+	@echo "$(GREEN)Deploying to Raspberry Pi...$(RESET)"
+	@if [ -z "$(RPI_HOST)" ]; then echo "$(RED)❌ RPI_HOST environment variable required (e.g., 192.168.1.8)$(RESET)"; exit 1; fi
+	@if [ -z "$(RPI_USER)" ]; then echo "$(RED)❌ RPI_USER environment variable required (e.g., muse3dstudio)$(RESET)"; exit 1; fi
+	@echo "$(YELLOW)Deploying to $(RPI_USER)@$(RPI_HOST)$(RESET)"
+	@rsync -avz --delete --exclude node_modules --exclude .git --exclude .env* . $(RPI_USER)@$(RPI_HOST):~/muse3dstudio/web-app/
+	@ssh $(RPI_USER)@$(RPI_HOST) "cd ~/muse3dstudio/web-app && npm install && npx prisma generate"
+	@ssh $(RPI_USER)@$(RPI_HOST) "sudo cp ~/muse3dstudio/web-app/systemd/*.service /etc/systemd/system/ && sudo systemctl daemon-reload"
+	@ssh $(RPI_USER)@$(RPI_HOST) "sudo docker compose up -d postgres redis && sudo systemctl restart muse3d-web.service cloudflare-tunnel.service"
+	@echo "$(GREEN)✓ Raspberry Pi deployment complete$(RESET)"
+
+rpi-status: ## Check Raspberry Pi services status
+	@echo "$(GREEN)Checking Raspberry Pi status...$(RESET)"
+	@if [ -z "$(RPI_HOST)" ]; then echo "$(RED)❌ RPI_HOST environment variable required$(RESET)"; exit 1; fi
+	@if [ -z "$(RPI_USER)" ]; then echo "$(RED)❌ RPI_USER environment variable required$(RESET)"; exit 1; fi
+	@ssh $(RPI_USER)@$(RPI_HOST) "sudo systemctl is-active muse3d-web.service cloudflare-tunnel.service && sudo docker compose ps"
+
+rpi-logs: ## View Raspberry Pi application logs
+	@echo "$(GREEN)Viewing Raspberry Pi logs...$(RESET)"
+	@if [ -z "$(RPI_HOST)" ]; then echo "$(RED)❌ RPI_HOST environment variable required$(RESET)"; exit 1; fi
+	@if [ -z "$(RPI_USER)" ]; then echo "$(RED)❌ RPI_USER environment variable required$(RESET)"; exit 1; fi
+	@ssh $(RPI_USER)@$(RPI_HOST) "sudo journalctl -u muse3d-web.service -f"
+
+rpi-health: ## Check Raspberry Pi application health
+	@echo "$(GREEN)Checking Raspberry Pi application health...$(RESET)"
+	@if [ -z "$(RPI_HOST)" ]; then echo "$(RED)❌ RPI_HOST environment variable required$(RESET)"; exit 1; fi
+	@curl -f http://$(RPI_HOST):3000/api/health || echo "$(RED)Health check failed$(RESET)"
+
+rpi-restart: ## Restart Raspberry Pi services
+	@echo "$(GREEN)Restarting Raspberry Pi services...$(RESET)"
+	@if [ -z "$(RPI_HOST)" ]; then echo "$(RED)❌ RPI_HOST environment variable required$(RESET)"; exit 1; fi
+	@if [ -z "$(RPI_USER)" ]; then echo "$(RED)❌ RPI_USER environment variable required$(RESET)"; exit 1; fi
+	@ssh $(RPI_USER)@$(RPI_HOST) "sudo systemctl restart muse3d-web.service cloudflare-tunnel.service && sudo docker compose restart postgres redis"
+	@echo "$(GREEN)✓ Raspberry Pi services restarted$(RESET)" 

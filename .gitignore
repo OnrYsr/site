@@ -52,3 +52,12 @@ CONNECTIONS.md
 
 # PM2 logs
 /logs/
+
+# Raspberry Pi specific files
+.env.rpi.production
+cloudflared-linux-arm64.deb
+cloudflared-linux-arm64.deb.*
+
+# Systemd service copies (originals in systemd/ folder)
+muse3d-web.service
+cloudflare-tunnel.service
