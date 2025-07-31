@@ -8,103 +8,90 @@ on:
 jobs:
   deploy:
     name: Deploy to Raspberry Pi Production
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-        chmod 600 ~/.ssh/deploy_key
-        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-        # Alternative SSH scan with port specification
-        ssh-keyscan -p 22 -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
         
-    - name: Test SSH Connection
+    - name: Deploy to Raspberry Pi (Self-Hosted)
       run: |
-        ssh -i ~/.ssh/deploy_key -o ConnectTimeout=10 -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful'"
+        set -e  # Exit on any error
         
-    - name: Deploy to Raspberry Pi
-      run: |
-        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-          set -e  # Exit on any error
-          
-          echo "🚀 Starting Raspberry Pi deployment..."
-          echo "📍 Working directory: $(pwd)"
-          
-          # Navigate to project directory
-          cd ${{ secrets.SERVER_PATH }}
-          echo "📂 Current directory: $(pwd)"
-          
-          # Check current git status
-          echo "📋 Current git status:"
-          git status --porcelain
-          
-          # Stash any local changes (if any)
-          git stash push -m "Auto-stash before deployment $(date)"
-          
-          # Pull latest changes
-          echo "⬇️ Pulling latest changes..."
-          git pull origin main
-          echo "✅ Code updated"
-          
-          # Install dependencies
-          echo "📦 Installing dependencies..."
-          npm install --production=false
-          echo "✅ Dependencies installed"
-          
-          # Generate Prisma client
-          echo "🗄️ Generating Prisma client..."
-          npx prisma generate
-          echo "✅ Prisma client generated"
-          
-          # Update systemd services if changed
-          echo "🔧 Updating systemd services..."
-          sudo cp systemd/muse3d-web.service /etc/systemd/system/ || echo "Service file not changed"
-          sudo cp systemd/cloudflare-tunnel.service /etc/systemd/system/ || echo "Tunnel service not changed"
-          sudo systemctl daemon-reload
-          echo "✅ Systemd services updated"
-          
-          # Ensure Docker services are running
-          echo "🐳 Checking Docker services..."
-          sudo docker compose up -d postgres redis
-          echo "✅ Database services running"
-          
-          # Restart web application service
-          echo "🔄 Restarting web application..."
-          sudo systemctl restart muse3d-web.service
-          echo "✅ Web service restarted"
-          
-          # Restart Cloudflare tunnel (if needed)
-          echo "🔗 Checking tunnel service..."
-          sudo systemctl restart cloudflare-tunnel.service
-          echo "✅ Tunnel service restarted"
-          
-          # Wait for services to be ready
-          echo "⏳ Waiting for services to start..."
-          sleep 15
-          
-          # Check service status
-          echo "📊 Service status:"
-          sudo systemctl is-active muse3d-web.service
-          sudo systemctl is-active cloudflare-tunnel.service
-          
-          # Check if the app is responding
-          echo "🌐 Testing application health..."
-          curl -f http://localhost:3000/api/health > /dev/null 2>&1 && echo "✅ App healthy and responding" || echo "⚠️ Health check failed"
-          
-          echo "🎉 Raspberry Pi deployment completed successfully!"
-        EOF
+        echo "🚀 Starting self-hosted Raspberry Pi deployment..."
+        echo "📍 Working directory: $(pwd)"
+        
+        # Navigate to project directory
+        cd /home/muse3dstudio/muse3dstudio/web-app
+        echo "📂 Current directory: $(pwd)"
+        
+        # Backup current code
+        echo "💾 Backing up current code..."
+        cp -r . ../web-app-backup-$(date +%Y%m%d-%H%M%S) || echo "Backup failed, continuing..."
+        
+        # Update code from GitHub
+        echo "⬇️ Updating code from repository..."
+        git stash push -m "Auto-stash before deployment $(date)" || echo "Nothing to stash"
+        git pull origin main
+        echo "✅ Code updated from GitHub"
+        
+        # Install dependencies
+        echo "📦 Installing dependencies..."
+        npm install --production=false
+        echo "✅ Dependencies installed"
+        
+        # Generate Prisma client
+        echo "🗄️ Generating Prisma client..."
+        npx prisma generate
+        echo "✅ Prisma client generated"
+        
+        # Update systemd services if changed
+        echo "🔧 Updating systemd services..."
+        sudo cp systemd/muse3d-web.service /etc/systemd/system/ || echo "Service file not changed"
+        sudo cp systemd/cloudflare-tunnel.service /etc/systemd/system/ || echo "Tunnel service not changed"
+        sudo systemctl daemon-reload
+        echo "✅ Systemd services updated"
+        
+        # Ensure Docker services are running
+        echo "🐳 Checking Docker services..."
+        sudo docker compose up -d postgres redis
+        echo "✅ Database services running"
+        
+        # Restart web application service
+        echo "🔄 Restarting web application..."
+        sudo systemctl restart muse3d-web.service
+        echo "✅ Web service restarted"
+        
+        # Restart Cloudflare tunnel (if needed)
+        echo "🔗 Checking tunnel service..."
+        sudo systemctl restart cloudflare-tunnel.service
+        echo "✅ Tunnel service restarted"
+        
+        # Wait for services to be ready
+        echo "⏳ Waiting for services to start..."
+        sleep 15
+        
+        # Check service status
+        echo "📊 Service status:"
+        sudo systemctl is-active muse3d-web.service
+        sudo systemctl is-active cloudflare-tunnel.service
+        
+        # Check if the app is responding
+        echo "🌐 Testing application health..."
+        curl -f http://localhost:3000/api/health > /dev/null 2>&1 && echo "✅ App healthy and responding" || echo "⚠️ Health check failed"
+        
+        echo "🎉 Self-hosted Raspberry Pi deployment completed successfully!"
         
     - name: Verify deployment
       run: |
-        echo "🌐 Verifying Raspberry Pi deployment..."
+        echo "🌐 Verifying self-hosted Raspberry Pi deployment..."
         
         # Wait for services to be fully ready
         sleep 20
+        
+        # Check local health first
+        local_health=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health || echo "000")
+        echo "🏠 Local health response: $local_health"
         
         # Check if site is responding via domain
         response=$(curl -s -o /dev/null -w "%{http_code}" https://muse3dstudio.com || echo "000")
@@ -112,14 +99,14 @@ jobs:
         
         # Check health endpoint specifically
         health_response=$(curl -s -o /dev/null -w "%{http_code}" https://muse3dstudio.com/api/health || echo "000")
-        echo "🏥 Health endpoint response: $health_response"
+        echo "🏥 Domain health endpoint response: $health_response"
         
-        if [ "$response" = "200" ] && [ "$health_response" = "200" ]; then
-          echo "✅ Raspberry Pi deployment successful! Site is live and healthy."
+        if [ "$local_health" = "200" ] && [ "$response" = "200" ] && [ "$health_response" = "200" ]; then
+          echo "✅ Self-hosted Raspberry Pi deployment successful! Site is live and healthy."
         elif [ "$response" = "502" ] || [ "$response" = "503" ]; then
           echo "⚠️ Site is showing $response - services might still be starting up"
         else
-          echo "❌ Deployment verification failed - response codes: site=$response, health=$health_response"
+          echo "❌ Deployment verification failed - response codes: local=$local_health, site=$response, health=$health_response"
         fi
         
-        echo "🎉 Raspberry Pi deployment verification completed"
+        echo "🎉 Self-hosted Raspberry Pi deployment verification completed"

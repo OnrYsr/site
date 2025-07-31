@@ -5,26 +5,26 @@ Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, Type
 ## 🌐 **LIVE PRODUCTION SITE**
 
 ### **✅ Canlı Site URL'leri:**
-- **🔗 Ana Site**: [http://muse3dstudio.com](http://muse3dstudio.com)
-- **🔗 www Subdomain**: [http://www.muse3dstudio.com](http://www.muse3dstudio.com)
-- **⚙️ Admin Panel**: [http://muse3dstudio.com/admin](http://muse3dstudio.com/admin)
-- **🔧 Direct IP Access**: [http://13.60.88.122:3000](http://13.60.88.122:3000)
+- **🔗 Ana Site**: [https://muse3dstudio.com](https://muse3dstudio.com)
+- **🔗 www Subdomain**: [https://www.muse3dstudio.com](https://www.muse3dstudio.com)
+- **⚙️ Admin Panel**: [https://muse3dstudio.com/auth/login](https://muse3dstudio.com/auth/login)
+- **🏥 Health Check**: [https://muse3dstudio.com/api/health](https://muse3dstudio.com/api/health)
 
-### **🚀 Production Altyapısı:**
-- **☁️ Cloud Provider**: AWS EC2 (t3.micro, Ubuntu 24.04)
-- **🐳 Containerization**: Docker Compose (Multi-stage production build)
-- **🌐 Web Server**: Nginx (Reverse Proxy, Port 80 → 3000)
-- **🗄️ Database**: PostgreSQL 16+ (Docker container, persistent volume)
-- **💾 Cache**: Redis (Docker container, persistent volume)
-- **🔒 SSL Certificate**: Let's Encrypt (Coming Soon)
-- **📊 Process Management**: Docker healthchecks & auto-restart
+### **🍓 Raspberry Pi Production Altyapısı:**
+- **🖥️ Hardware**: Raspberry Pi 4/5 (4GB RAM, ARM64)
+- **☁️ Global Access**: Cloudflare Tunnel (Zero Trust Network)
+- **🔒 SSL/TLS**: Full encryption via Cloudflare (HTTPS everywhere)
+- **🐳 Database**: PostgreSQL 16 + Redis 7 (Docker containers)
+- **⚡ Application**: Next.js 15 (Native systemd service)
+- **🔄 CI/CD**: GitHub Actions → SSH tunnel → Auto deployment
+- **📊 Monitoring**: Systemd services + Docker healthchecks
 
-### **📡 Server Specifications:**
-- **IP Address**: `13.60.88.122`
-- **Operating System**: Ubuntu 24.04 LTS
-- **RAM**: 1GB (+ 2GB Swap for builds)
-- **Storage**: SSD with Docker volumes
-- **Network**: Auto-scaling security groups
+### **🌐 Network & Security:**
+- **🔗 SSH Tunnel**: `ssh.muse3dstudio.com` (GitHub Actions access)
+- **🛡️ DDoS Protection**: Cloudflare Enterprise-level protection
+- **🚀 Global CDN**: 200+ edge locations worldwide
+- **⚡ Performance**: 239 Mbps Ethernet, 5ms ping
+- **🔐 Zero Trust**: No direct IP exposure, tunnel-only access
 
 ---
 
@@ -91,37 +91,51 @@ make clean
 
 ## 🚢 Production Deployment
 
-### **Production Build & Deploy**
+### **🤖 Automated CI/CD (Recommended)**
+Kod push ettiğinizde otomatik deployment:
 ```bash
-# Production build (sunucuda)
-make prod-build
-
-# Database setup (ilk kurulum)
-make db-setup
-
-# Sistem durumu kontrol
-docker ps
-docker logs muse3d_app
+git add .
+git commit -m "feat: new feature"
+git push origin main
+# 🚀 GitHub Actions otomatik olarak Pi'ye deploy eder!
 ```
 
-### **Quick Deploy Scripts**
+### **🍓 Raspberry Pi Commands**
 ```bash
-# Hızlı production deploy
-npm run deploy:quick
+# Pi'ye manuel deployment
+RPI_HOST=192.168.1.8 RPI_USER=muse3dstudio make rpi-deploy
 
-# Manual production sync
-rsync -av --exclude='node_modules' --exclude='.next' --exclude='.git' . ubuntu@13.60.88.122:/var/www/muse3dstudio/
+# Pi servis durumu
+RPI_HOST=192.168.1.8 RPI_USER=muse3dstudio make rpi-status
+
+# Pi health check
+RPI_HOST=192.168.1.8 make rpi-health
+
+# Pi logları izle
+RPI_HOST=192.168.1.8 RPI_USER=muse3dstudio make rpi-logs
 ```
+
+### **📋 Pi Deployment Guide**
+Detaylı Raspberry Pi kurulum ve deployment rehberi:
+- **📖 Complete Guide**: [RASPBERRY-PI-DEPLOYMENT.md](RASPBERRY-PI-DEPLOYMENT.md)
+- **🔧 Setup Script**: `scripts/setup-rpi.sh`
+- **⚙️ Systemd Services**: `systemd/` klasörü
 
 ### **Environment Variables**
-Production ortamı için `.env` dosyası:
+Raspberry Pi production ortamı için `.env` dosyası:
 ```bash
-# Production Database
-DATABASE_URL="postgresql://postgres:@localhost:5432/muse3dstudio"
+# Production Database (Pi)
+DATABASE_URL="postgresql://postgres:postgres123@localhost:5432/muse3dstudio"
 
-# NextAuth Configuration  
-NEXTAUTH_URL="http://muse3dstudio.com"
-NEXTAUTH_SECRET="your-production-secret-key"
+# NextAuth Configuration (HTTPS)
+NEXTAUTH_URL="https://muse3dstudio.com"
+NEXTAUTH_SECRET="your-super-secret-key-here"
+
+# Cloudflare Tunnel
+CLOUDFLARE_TUNNEL_TOKEN="your-tunnel-token-here"
+
+# Pi Performance Optimization
+NODE_OPTIONS="--max-old-space-size=512"
 
 # App Environment
 NODE_ENV="production"
@@ -264,3 +278,41 @@ server {
 **📅 Last Updated**: July 28, 2024  
 **🏷️ Version**: 1.0.0 Production  
 **👨‍💻 Developed by**: Muse3DStudio Team
+
+## 🍓 **Raspberry Pi Production**
+
+Bu proje artık **Raspberry Pi 4/5** üzerinde **production'da çalışıyor!**
+
+### **🚀 Quick Facts:**
+- ✅ **Live Site**: [https://muse3dstudio.com](https://muse3dstudio.com)
+- ✅ **Global Access**: Cloudflare Tunnel (200+ CDN locations)
+- ✅ **Zero Trust Security**: SSH tunnel only access
+- ✅ **Automated CI/CD**: GitHub Actions → Pi deployment
+- ✅ **High Performance**: 239 Mbps, ARM64 optimized
+
+### **🔄 Development Workflow:**
+```bash
+# 1. Local'de develop et
+npm run dev
+
+# 2. Test et ve commit at
+git add .
+git commit -m "feat: new feature"
+
+# 3. Push et (GitHub Actions otomatik deploy eder!)
+git push origin main
+
+# 4. Live sitede test et: https://muse3dstudio.com
+```
+
+### **📚 Documentation:**
+- **🍓 Pi Deployment**: [RASPBERRY-PI-DEPLOYMENT.md](RASPBERRY-PI-DEPLOYMENT.md)
+- **⚡ Quick Start**: [QUICK-START.md](QUICK-START.md)
+- **🔧 Development**: [DEV-WORKFLOW.md](DEV-WORKFLOW.md)
+- **🚀 Deployment**: [DEPLOY.md](DEPLOY.md)
+
+---
+
+**🎉 Happy coding on Raspberry Pi!** 🍓
+
+*Production ready, globally accessible, fully automated!*
