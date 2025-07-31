@@ -61,3 +61,4 @@ cloudflared-linux-arm64.deb.*
 # Systemd service copies (originals in systemd/ folder)
 muse3d-web.service
 cloudflare-tunnel.service
+cloudflared-linux-arm64.deb
