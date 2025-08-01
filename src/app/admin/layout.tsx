@@ -269,30 +269,33 @@ function AdminDashboard({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
-        <div className="p-4 text-xs text-gray-400">v1.0.0</div>
-      </aside>
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen">
-        {/* Topbar */}
-        <header className="h-16 bg-white border-b flex items-center px-6 justify-between">
-          <span className="font-semibold text-gray-700">Yönetim Paneli</span>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <User className="w-4 h-4" />
-              <span>{session?.user?.name || session?.user?.email}</span>
-            </div>
-            <Link href="/" className="text-blue-600 hover:underline text-sm">
+        
+        {/* User Info & Actions */}
+        <div className="p-4 border-t bg-gray-50">
+          <div className="text-xs text-gray-600 mb-3">
+            👤 {session?.user?.name || session?.user?.email}
+          </div>
+          <div className="space-y-2">
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              <div className="w-4 h-4">🌐</div>
               Siteye Git
             </Link>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 transition-colors"
+              className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 transition-colors w-full text-left"
             >
               <LogOut className="w-4 h-4" />
-              Çıkış
+              Çıkış Yap
             </button>
           </div>
-        </header>
+          <div className="text-xs text-gray-400 mt-3">v1.0.0</div>
+        </div>
+      </aside>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col min-h-screen">
         <div className="flex-1 p-8">{children}</div>
       </main>
     </div>

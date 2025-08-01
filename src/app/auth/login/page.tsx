@@ -228,15 +228,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Hesabınız yok mu?{' '}
-            <Link href="/auth/register" className="text-blue-600 hover:text-blue-700 font-medium">
-              Kayıt olun
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   );
