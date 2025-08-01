@@ -94,6 +94,30 @@ jobs:
         npx prisma db push
         echo "✅ Database schema updated"
         
+        # Clean old categories and prepare for new seeding
+        echo "🧹 Cleaning old categories..."
+        node -e "
+        const { PrismaClient } = require('@prisma/client');
+        const prisma = new PrismaClient();
+        
+        async function cleanCategories() {
+          try {
+            console.log('🗑️ Deleting old categories...');
+            await prisma.product.deleteMany();
+            await prisma.category.deleteMany();
+            console.log('✅ Old categories and products deleted');
+            
+            await prisma.\$disconnect();
+          } catch (error) {
+            console.error('❌ Error cleaning categories:', error);
+            process.exit(1);
+          }
+        }
+        
+        cleanCategories();
+        "
+        echo "✅ Database cleaned"
+        
         # Seed database with categories and products
         echo "🌱 Seeding database with updated categories and products..."
         npm run db:seed
