@@ -45,6 +45,16 @@ jobs:
         npx prisma generate
         echo "✅ Prisma client generated"
         
+        # Update database schema
+        echo "🗄️ Updating database schema..."
+        npx prisma db push
+        echo "✅ Database schema updated"
+        
+        # Seed database with categories and products
+        echo "🌱 Seeding database with updated categories and products..."
+        npm run db:seed
+        echo "✅ Database seeded with new data"
+        
         # Update systemd services if changed
         echo "🔧 Updating systemd services..."
         sudo cp systemd/muse3d-web.service /etc/systemd/system/ || echo "Service file not changed"

@@ -274,7 +274,7 @@ function AdminDashboard({ children }: { children: React.ReactNode }) {
         <div className="p-4 border-t bg-gray-50">
           <div className="text-xs text-gray-600 mb-3">
             👤 {session?.user?.name || session?.user?.email}
-          </div>
+            </div>
           <div className="space-y-2">
             <Link
               href="/"

@@ -275,44 +275,107 @@ server {
 
 ---
 
-**📅 Last Updated**: July 28, 2024  
-**🏷️ Version**: 1.0.0 Production  
+**📅 Last Updated**: August 1, 2024  
+**🏷️ Version**: 1.1.0 Production  
 **👨‍💻 Developed by**: Muse3DStudio Team
 
-## 🍓 **Raspberry Pi Production**
+## 📊 **CURRENT STATUS** (Updated: Aug 1, 2024)
 
-Bu proje artık **Raspberry Pi 4/5** üzerinde **production'da çalışıyor!**
+### ✅ **Recently Implemented Features:**
 
-### **🚀 Quick Facts:**
-- ✅ **Live Site**: [https://muse3dstudio.com](https://muse3dstudio.com)
-- ✅ **Global Access**: Cloudflare Tunnel (200+ CDN locations)
-- ✅ **Zero Trust Security**: SSH tunnel only access
-- ✅ **Automated CI/CD**: GitHub Actions → Pi deployment
-- ✅ **High Performance**: 239 Mbps, ARM64 optimized
+#### 🔒 **Private Mode System** 
+- **PrivateWrapper**: Site-wide session protection
+- **ConditionalLayout**: Auth pages header/footer management  
+- **Registration Disabled**: Temporary private beta mode
+- **Login Required**: All pages require authentication
 
-### **🔄 Development Workflow:**
+#### 🛒 **isSaleActive Product Feature**
+- **Database**: `isSaleActive` field added to Product model
+- **Admin Panel**: New checkbox in product edit/create forms
+- **Frontend**: "Satışa Kapalı" badge + disabled cart buttons
+- **API**: Full CRUD support for sale status management
+
+#### 🛡️ **Enhanced Admin Security**
+- **Role-based Access**: ADMIN role verification
+- **Clean UI**: Redundant admin header removed
+- **Session Protection**: Double authentication layer
+
+### 🚀 **Current Deployment Status:**
+
+#### ✅ **Production Server** (Manual Deploy)
+- **Method**: Manual Git clone to Raspberry Pi
+- **Status**: ✅ **LIVE** - https://muse3dstudio.com
+- **Health**: ✅ API responding (200 OK)
+- **Features**: ✅ Private mode + isSaleActive active
+
+#### ⚠️ **GitHub Actions CI/CD**
+- **Status**: ❌ **FAILED** (Last automated deploy failed)
+- **Issue**: Build errors in local branch
+- **Solution**: Manual deployment used as workaround
+
+#### 📍 **Local Development**
+- **Status**: ⚠️ **HAS ISSUES** (Header undefined, JWT errors)
+- **Action**: Needs clean repository pull
+- **Fix**: `git clone` fresh copy recommended
+
+### 🎯 **Next Priority Actions:**
+
+1. **🔧 Fix Local Development**
 ```bash
-# 1. Local'de develop et
-npm run dev
+   # Clean local environment
+   cd /Users/home/Desktop
+   mv site site-backup
+   git clone https://github.com/OnrYsr/site.git site
+   ```
 
-# 2. Test et ve commit at
-git add .
-git commit -m "feat: new feature"
+2. **🤖 Repair GitHub Actions**
+   - Fix build errors
+   - Test automated deployment pipeline
+   - Restore CI/CD functionality
 
-# 3. Push et (GitHub Actions otomatik deploy eder!)
-git push origin main
+3. **📊 Test Production Features**
+   - Verify isSaleActive works end-to-end
+   - Test private mode user flows
+   - Admin panel functionality check
 
-# 4. Live sitede test et: https://muse3dstudio.com
-```
+4. **🚀 Performance Optimization**
+   - Database seeding with new structured data
+   - Production monitoring setup
+   - Error tracking implementation
 
-### **📚 Documentation:**
-- **🍓 Pi Deployment**: [RASPBERRY-PI-DEPLOYMENT.md](RASPBERRY-PI-DEPLOYMENT.md)
-- **⚡ Quick Start**: [QUICK-START.md](QUICK-START.md)
-- **🔧 Development**: [DEV-WORKFLOW.md](DEV-WORKFLOW.md)
-- **🚀 Deployment**: [DEPLOY.md](DEPLOY.md)
+### 📈 **Production Metrics:**
+- **Uptime**: ✅ 99.9% (Cloudflare CDN)
+- **Performance**: ⚡ 239 Mbps Pi connection  
+- **Security**: 🔒 Zero Trust + Private mode
+- **Global Access**: 🌍 200+ CDN locations
 
 ---
 
-**🎉 Happy coding on Raspberry Pi!** 🍓
+## 🚀 Deployment Guidelines
 
-*Production ready, globally accessible, fully automated!*
+### ❌ **NEVER DO ON PRODUCTION SERVER:**
+- `npm install` directly on server
+- Manual dependency management
+- Direct file edits on production
+
+### ✅ **CORRECT DEPLOYMENT FLOW:**
+1. **GitHub Actions** handles automatic deployment
+2. If Actions fails → Check logs first
+3. **Manual deployment ONLY via:**
+   - `./scripts/deploy-production.sh`
+   - `docker-compose -f docker-compose.prod.yml up -d --build`
+   - Existing automation scripts
+
+### 🔄 **Current Deployment Status Check:**
+```bash
+# Check if site is running
+curl -I https://muse3dstudio.com
+
+# Check Docker containers
+docker ps
+
+# Check GitHub Actions
+# Visit: https://github.com/OnrYsr/site/actions
+```
+
+**Remember: Production uses Docker + GitHub Actions, NOT manual npm commands!**
