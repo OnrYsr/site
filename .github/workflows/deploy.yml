@@ -48,14 +48,18 @@ jobs:
         if [ -f .env ]; then
           # Create backup and replace database URL completely
           cp .env .env.backup
-          # Replace any postgres host with localhost in DATABASE_URL
-          sed -i.bak 's|postgresql://postgres:postgres123@postgres:5432|postgresql://postgres:postgres123@localhost:5432|g' .env
+          # Remove any existing DATABASE_URL line and add the correct one
+          grep -v "^DATABASE_URL" .env > .env.tmp || true
+          echo 'DATABASE_URL="postgresql://postgres:postgres123@localhost:5432/muse3dstudio"' >> .env.tmp
+          mv .env.tmp .env
           echo "✅ Environment fixed for native execution"
         else
           echo "⚠️ .env file not found, creating from example..."
           cp env.production.example .env
-          # Fix the DATABASE_URL in the new file
-          sed -i.bak 's|postgresql://postgres:postgres123@postgres:5432|postgresql://postgres:postgres123@localhost:5432|g' .env
+          # Remove any existing DATABASE_URL line and add the correct one
+          grep -v "^DATABASE_URL" .env > .env.tmp || true
+          echo 'DATABASE_URL="postgresql://postgres:postgres123@localhost:5432/muse3dstudio"' >> .env.tmp
+          mv .env.tmp .env
           echo "✅ Environment created and fixed"
         fi
         
