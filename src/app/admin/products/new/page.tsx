@@ -20,6 +20,7 @@ const initialForm = {
   images: '',
   description: '',
   isActive: true,
+  isSaleActive: true,
   isFeatured: false,
 };
 
@@ -128,6 +129,7 @@ export default function AdminProductNewPage() {
         images: imageArray,
         stock: Number(form.stock),
         isActive: form.isActive,
+        isSaleActive: form.isSaleActive,
         isFeatured: form.isFeatured,
         categoryId: form.categoryId,
       };
@@ -300,6 +302,18 @@ export default function AdminProductNewPage() {
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
             <label htmlFor="isActive" className="text-sm text-gray-700">Aktif</label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isSaleActive"
+              name="isSaleActive"
+              checked={form.isSaleActive}
+              onChange={handleChange}
+              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+            />
+            <label htmlFor="isSaleActive" className="text-sm text-gray-700">Satışa Açık</label>
           </div>
 
           <div className="flex items-center gap-2">

@@ -40,6 +40,7 @@ export async function GET(
       images: product.images,
       stock: product.stock,
       isActive: product.isActive,
+      isSaleActive: product.isSaleActive,
       isFeatured: product.isFeatured,
       categoryId: product.categoryId,
       category: product.category,
@@ -73,7 +74,7 @@ export async function PATCH(
     const body = await request.json();
     
     // Sadece belirli alanların güncellenmesine izin ver
-    const allowedFields = ['isActive', 'isFeatured', 'name', 'description', 'price', 'originalPrice', 'stock', 'categoryId', 'images'];
+    const allowedFields = ['isActive', 'isSaleActive', 'isFeatured', 'name', 'description', 'price', 'originalPrice', 'stock', 'categoryId', 'images'];
     const updateData: any = {};
     
     for (const field of allowedFields) {
@@ -121,6 +122,7 @@ export async function PATCH(
       images: product.images,
       stock: product.stock,
       isActive: product.isActive,
+      isSaleActive: product.isSaleActive,
       isFeatured: product.isFeatured,
       category: product.category,
       createdAt: product.createdAt,

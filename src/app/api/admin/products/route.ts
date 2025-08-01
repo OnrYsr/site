@@ -34,6 +34,7 @@ export async function GET() {
       images: product.images,
       stock: product.stock,
       isActive: product.isActive,
+      isSaleActive: product.isSaleActive,
       isFeatured: product.isFeatured,
       category: {
         name: product.category.name,
@@ -63,7 +64,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, slug, description, price, originalPrice, images, stock, isActive, isFeatured, categoryId } = await request.json();
+    const { name, slug, description, price, originalPrice, images, stock, isActive, isSaleActive, isFeatured, categoryId } = await request.json();
 
     // Validation
     if (!name?.trim()) {
@@ -125,6 +126,7 @@ export async function POST(request: NextRequest) {
         images: Array.isArray(images) ? images : [],
         stock: Number(stock),
         isActive: isActive !== undefined ? isActive : true,
+        isSaleActive: isSaleActive !== undefined ? isSaleActive : true,
         isFeatured: isFeatured !== undefined ? isFeatured : false,
         categoryId
       },

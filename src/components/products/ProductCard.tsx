@@ -18,6 +18,7 @@ interface Product {
   slug: string;
   isNew: boolean;
   isFeatured: boolean;
+  isSaleActive?: boolean;
   badgeText?: string;
   badgeColor?: string;
   stock?: number;
@@ -93,9 +94,16 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
                 </span>
               )}
             </div>
-            <button className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1">
+            <button 
+              disabled={product.isSaleActive === false}
+              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1 ${
+                product.isSaleActive === false
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
               <ShoppingCart className="w-4 h-4" />
-              Sepete Ekle
+              {product.isSaleActive === false ? 'Satışa Kapalı' : 'Sepete Ekle'}
             </button>
           </div>
         </div>
@@ -116,6 +124,11 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
         
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1">
+          {product.isSaleActive === false && (
+            <div className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              Satışa Kapalı
+            </div>
+          )}
           {product.discount && (
             <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
               %{product.discount} İndirim
@@ -148,9 +161,16 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
         
         {/* Add to Cart Button */}
         <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+          <button 
+            disabled={product.isSaleActive === false}
+            className={`w-full py-2 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
+              product.isSaleActive === false
+                ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
             <ShoppingCart className="w-4 h-4" />
-            Sepete Ekle
+            {product.isSaleActive === false ? 'Satışa Kapalı' : 'Sepete Ekle'}
           </button>
         </div>
       </div>

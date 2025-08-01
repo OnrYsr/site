@@ -79,9 +79,18 @@ const prisma = new __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f
 function generateSlug(name) {
     return name.toLowerCase().replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c').replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-');
 }
-async function GET() {
+async function GET(request) {
     try {
+        const { searchParams } = new URL(request.url);
+        const homepage = searchParams.get('homepage');
+        // Base where condition
+        const whereCondition = {};
+        // If homepage=true parameter is passed, only show categories with showOnHomepage=true
+        if (homepage === 'true') {
+            whereCondition.showOnHomepage = true;
+        }
         const categories = await prisma.category.findMany({
+            where: whereCondition,
             include: {
                 subcategories: {
                     where: {
@@ -178,7 +187,7 @@ async function GET() {
 }
 async function POST(request) {
     try {
-        const { name, description, image, parentId, displayOrder, isActive } = await request.json();
+        const { name, description, image, parentId, displayOrder, isActive, showOnHomepage } = await request.json();
         // Validation
         if (!name?.trim()) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
@@ -236,7 +245,8 @@ async function POST(request) {
                 image: image?.trim() || null,
                 parentId: parentId || null,
                 displayOrder: orderValue,
-                isActive: isActive !== undefined ? isActive : true
+                isActive: isActive !== undefined ? isActive : true,
+                showOnHomepage: showOnHomepage !== undefined ? showOnHomepage : false
             },
             include: {
                 subcategories: {

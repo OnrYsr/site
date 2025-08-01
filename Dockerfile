@@ -4,8 +4,11 @@
 FROM node:20-alpine AS base
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Copy package files and Prisma schema
 COPY package*.json ./
+COPY prisma ./prisma
+
+# Install dependencies based on the preferred package manager
 RUN npm ci --only=production && npm cache clean --force
 
 # Development stage
@@ -36,8 +39,9 @@ CMD ["npm", "run", "dev"]
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy package files
+# Copy package files and Prisma schema first
 COPY package*.json ./
+COPY prisma ./prisma
 
 # Install all dependencies
 RUN npm ci
@@ -45,7 +49,7 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma client again (to be safe)
 RUN npx prisma generate
 
 # Build the application
@@ -59,8 +63,9 @@ WORKDIR /app
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
 
-# Copy package files
+# Copy package files and Prisma schema
 COPY package*.json ./
+COPY prisma ./prisma
 
 # Install only production dependencies
 RUN npm ci --only=production && npm cache clean --force

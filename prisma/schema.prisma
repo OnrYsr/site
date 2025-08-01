@@ -74,6 +74,7 @@ model Product {
   images      String[] // JSON array olarak saklanacak
   stock       Int      @default(0)
   isActive    Boolean  @default(true)
+  isSaleActive Boolean  @default(true)  // Satışa açık/kapalı
   isFeatured  Boolean  @default(false)
   categoryId  String
   createdAt   DateTime @default(now())

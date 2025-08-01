@@ -57,6 +57,7 @@ export default function AdminProductEditPage() {
     categoryId: '',
     images: '',
     isActive: true,
+    isSaleActive: true,
     isFeatured: false,
   });
 
@@ -124,6 +125,7 @@ export default function AdminProductEditPage() {
           categoryId: productData.categoryId,
           images: productData.images.join(', '),
           isActive: productData.isActive,
+          isSaleActive: productData.isSaleActive ?? true,
           isFeatured: productData.isFeatured,
         });
 
@@ -171,6 +173,7 @@ export default function AdminProductEditPage() {
         categoryId: form.categoryId,
         images: imagesArray,
         isActive: form.isActive,
+        isSaleActive: form.isSaleActive,
         isFeatured: form.isFeatured,
       };
 
@@ -410,6 +413,19 @@ export default function AdminProductEditPage() {
             />
             <label htmlFor="isFeatured" className="text-sm text-gray-700">
               Öne çıkan ürün
+            </label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isSaleActive"
+              name="isSaleActive"
+              checked={form.isSaleActive}
+              onChange={handleChange}
+              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+            />
+            <label htmlFor="isSaleActive" className="text-sm text-gray-700">
+              Satışa açık <span className="text-green-600 text-xs">(Kapalıysa "Satışa Kapalı" görünür)</span>
             </label>
           </div>
         </div>

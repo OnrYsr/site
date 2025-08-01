@@ -48,6 +48,13 @@ async function main() {
       description: 'Bitki ve doğa objeleri',
       isActive: true,
       showOnHomepage: true
+    },
+    {
+      name: 'Oyun Modelleri',
+      slug: 'oyun-modelleri',
+      description: 'Gaming ve oyun karakterleri',
+      isActive: true,
+      showOnHomepage: true
     }
   ];
 
