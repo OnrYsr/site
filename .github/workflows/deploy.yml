@@ -40,6 +40,24 @@ jobs:
         npm install --production=false
         echo "✅ Dependencies installed"
         
+        # Ensure Docker services are running FIRST
+        echo "🐳 Starting Docker services..."
+        sudo docker compose up -d postgres redis
+        echo "✅ Database services started"
+        
+        # Wait for PostgreSQL to be ready
+        echo "⏳ Waiting for PostgreSQL to be ready..."
+        timeout=60
+        while ! sudo docker compose exec postgres pg_isready -U postgres > /dev/null 2>&1; do
+          sleep 2
+          timeout=$((timeout - 2))
+          if [ $timeout -le 0 ]; then
+            echo "❌ PostgreSQL failed to start within 60 seconds"
+            exit 1
+          fi
+        done
+        echo "✅ PostgreSQL is ready"
+        
         # Generate Prisma client
         echo "🗄️ Generating Prisma client..."
         npx prisma generate
@@ -61,11 +79,6 @@ jobs:
         sudo cp systemd/cloudflare-tunnel.service /etc/systemd/system/ || echo "Tunnel service not changed"
         sudo systemctl daemon-reload
         echo "✅ Systemd services updated"
-        
-        # Ensure Docker services are running
-        echo "🐳 Checking Docker services..."
-        sudo docker compose up -d postgres redis
-        echo "✅ Database services running"
         
         # Restart web application service
         echo "🔄 Restarting web application..."
