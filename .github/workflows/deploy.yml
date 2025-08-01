@@ -42,16 +42,25 @@ jobs:
         
         # Fix environment file for native execution
         echo "🔧 Fixing environment configuration..."
+        echo "📋 Current .env content (before fix):"
+        cat .env 2>/dev/null || echo "No .env file found"
+        
         if [ -f .env ]; then
-          # Replace @postgres: with @localhost: for native execution
-          sed -i.bak 's/@postgres:/@localhost:/g' .env
+          # Create backup and replace database URL completely
+          cp .env .env.backup
+          # Replace any postgres host with localhost in DATABASE_URL
+          sed -i.bak 's|postgresql://postgres:postgres123@postgres:5432|postgresql://postgres:postgres123@localhost:5432|g' .env
           echo "✅ Environment fixed for native execution"
         else
           echo "⚠️ .env file not found, creating from example..."
           cp env.production.example .env
-          sed -i.bak 's/@postgres:/@localhost:/g' .env
+          # Fix the DATABASE_URL in the new file
+          sed -i.bak 's|postgresql://postgres:postgres123@postgres:5432|postgresql://postgres:postgres123@localhost:5432|g' .env
           echo "✅ Environment created and fixed"
         fi
+        
+        echo "📋 Fixed .env DATABASE_URL:"
+        grep "DATABASE_URL" .env || echo "No DATABASE_URL found in .env"
         
         # Ensure Docker services are running FIRST
         echo "🐳 Starting Docker services..."
