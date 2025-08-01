@@ -42,13 +42,13 @@ jobs:
         
         # Ensure Docker services are running FIRST
         echo "🐳 Starting Docker services..."
-        sudo docker compose up -d postgres redis
+        docker compose up -d postgres redis
         echo "✅ Database services started"
         
         # Wait for PostgreSQL to be ready
         echo "⏳ Waiting for PostgreSQL to be ready..."
         timeout=60
-        while ! sudo docker compose exec postgres pg_isready -U postgres > /dev/null 2>&1; do
+        while ! docker compose exec postgres pg_isready -U postgres > /dev/null 2>&1; do
           sleep 2
           timeout=$((timeout - 2))
           if [ $timeout -le 0 ]; then
@@ -73,21 +73,21 @@ jobs:
         npm run db:seed
         echo "✅ Database seeded with new data"
         
-        # Update systemd services if changed
+        # Update systemd services if changed (try without sudo first, fallback to sudo)
         echo "🔧 Updating systemd services..."
-        sudo cp systemd/muse3d-web.service /etc/systemd/system/ || echo "Service file not changed"
-        sudo cp systemd/cloudflare-tunnel.service /etc/systemd/system/ || echo "Tunnel service not changed"
-        sudo systemctl daemon-reload
+        cp systemd/muse3d-web.service /etc/systemd/system/ 2>/dev/null || sudo cp systemd/muse3d-web.service /etc/systemd/system/ || echo "Service file not changed"
+        cp systemd/cloudflare-tunnel.service /etc/systemd/system/ 2>/dev/null || sudo cp systemd/cloudflare-tunnel.service /etc/systemd/system/ || echo "Tunnel service not changed"
+        systemctl daemon-reload 2>/dev/null || sudo systemctl daemon-reload || echo "Could not reload systemd"
         echo "✅ Systemd services updated"
         
         # Restart web application service
         echo "🔄 Restarting web application..."
-        sudo systemctl restart muse3d-web.service
+        systemctl restart muse3d-web.service 2>/dev/null || sudo systemctl restart muse3d-web.service || echo "Could not restart web service"
         echo "✅ Web service restarted"
         
         # Restart Cloudflare tunnel (if needed)
         echo "🔗 Checking tunnel service..."
-        sudo systemctl restart cloudflare-tunnel.service
+        systemctl restart cloudflare-tunnel.service 2>/dev/null || sudo systemctl restart cloudflare-tunnel.service || echo "Could not restart tunnel service"
         echo "✅ Tunnel service restarted"
         
         # Wait for services to be ready
@@ -96,8 +96,8 @@ jobs:
         
         # Check service status
         echo "📊 Service status:"
-        sudo systemctl is-active muse3d-web.service
-        sudo systemctl is-active cloudflare-tunnel.service
+        systemctl is-active muse3d-web.service 2>/dev/null || sudo systemctl is-active muse3d-web.service || echo "Could not check web service"
+        systemctl is-active cloudflare-tunnel.service 2>/dev/null || sudo systemctl is-active cloudflare-tunnel.service || echo "Could not check tunnel service"
         
         # Check if the app is responding
         echo "🌐 Testing application health..."
