@@ -40,6 +40,19 @@ jobs:
         npm install --production=false
         echo "✅ Dependencies installed"
         
+        # Fix environment file for native execution
+        echo "🔧 Fixing environment configuration..."
+        if [ -f .env ]; then
+          # Replace @postgres: with @localhost: for native execution
+          sed -i.bak 's/@postgres:/@localhost:/g' .env
+          echo "✅ Environment fixed for native execution"
+        else
+          echo "⚠️ .env file not found, creating from example..."
+          cp env.production.example .env
+          sed -i.bak 's/@postgres:/@localhost:/g' .env
+          echo "✅ Environment created and fixed"
+        fi
+        
         # Ensure Docker services are running FIRST
         echo "🐳 Starting Docker services..."
         docker compose up -d postgres redis
