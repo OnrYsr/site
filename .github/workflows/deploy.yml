@@ -94,49 +94,26 @@ jobs:
         npx prisma db push
         echo "✅ Database schema updated"
         
-        # Clean old categories and prepare for new seeding
-        echo "🧹 Cleaning old categories..."
-        node -e "
-        const { PrismaClient } = require('@prisma/client');
-        const prisma = new PrismaClient();
-        
-        async function cleanCategories() {
-          try {
-            console.log('🗑️ Deleting old categories...');
-            await prisma.product.deleteMany();
-            await prisma.category.deleteMany();
-            console.log('✅ Old categories and products deleted');
-            
-            await prisma.\$disconnect();
-          } catch (error) {
-            console.error('❌ Error cleaning categories:', error);
-            process.exit(1);
-          }
-        }
-        
-        cleanCategories();
-        "
-        echo "✅ Database cleaned"
-        
-        # Seed database with categories and products
-        echo "🌱 Seeding database with updated categories and products..."
+        # NOTE: We DON'T clean existing data to preserve production content
+        # Only run seed to ensure base categories exist (upsert mode)
+        echo "🌱 Ensuring base categories and products exist (upsert mode)..."
         npm run db:seed
-        echo "✅ Database seeded with new data"
+        echo "✅ Base data verified (existing data preserved)"
         
-        # Apply sample images to database
-        echo "🎨 Applying sample images to database..."
+        # Apply sample images ONLY to items that don't have images yet
+        echo "🎨 Applying sample images to new items only..."
         node scripts/apply-sample-images.js
-        echo "✅ Sample images applied"
+        echo "✅ Sample images applied (existing preserved)"
         
-        # Apply images to all products
-        echo "🖼️ Applying images to all products..."
+        # Apply images to products without images
+        echo "🖼️ Applying images to products without images..."
         node scripts/apply-all-sample-images.js
-        echo "✅ Product images applied"
+        echo "✅ Product images applied (existing preserved)"
         
-        # Apply images to all categories
-        echo "🏷️ Applying images to all categories..."
+        # Apply images to categories without images  
+        echo "🏷️ Applying images to categories without images..."
         node scripts/apply-category-images.js
-        echo "✅ Category images applied"
+        echo "✅ Category images applied (existing preserved)"
         
         # Update systemd services if changed (try without sudo first, fallback to sudo)
         echo "🔧 Updating systemd services..."
