@@ -1,6 +1,6 @@
 'use client';
 
-import { Package, Tag, Image, Users, ShoppingBag } from 'lucide-react';
+import { Package, Tag, Image, Users, ShoppingBag, Settings } from 'lucide-react';
 import Link from 'next/link';
 
 const stats = [
@@ -9,6 +9,7 @@ const stats = [
   { label: 'Bannerlar', value: 4, icon: Image, href: '/admin/banners' },
   { label: 'Siparişler', value: 56, icon: ShoppingBag, href: '/admin/orders' },
   { label: 'Kullanıcılar', value: 320, icon: Users, href: '/admin/users' },
+  { label: 'Site Ayarları', value: '⚙️', icon: Settings, href: '/admin/settings' },
 ];
 
 export default function AdminDashboard() {
@@ -29,7 +30,7 @@ export default function AdminDashboard() {
       <div className="bg-white rounded-xl shadow p-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Hoşgeldiniz!</h2>
         <p className="text-gray-600">
-          Bu panelden ürün, kategori, banner, sipariş ve kullanıcı yönetimi işlemlerini gerçekleştirebilirsiniz.
+          Bu panelden ürün, kategori, banner, sipariş, kullanıcı yönetimi ve site ayarlarını gerçekleştirebilirsiniz.
         </p>
       </div>
     </div>

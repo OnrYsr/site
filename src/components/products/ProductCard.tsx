@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
 
 interface Product {
   id: string;
@@ -38,6 +39,19 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
   // Görsel yükleme state'leri
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  
+  // Cart hook
+  const { addToCart, isLoading } = useCart();
+
+  // Sepete ekleme handler
+  const handleAddToCart = async () => {
+    try {
+      await addToCart(product.id);
+      console.log('Product added to cart:', product.name);
+    } catch (error) {
+      console.error('Failed to add product to cart:', error);
+    }
+  };
 
   // List View
   if (viewMode === 'list') {
@@ -112,15 +126,16 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
               )}
             </div>
             <button 
-              disabled={product.isSaleActive === false}
+              onClick={handleAddToCart}
+              disabled={product.isSaleActive === false || isLoading}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1 ${
-                product.isSaleActive === false
+                product.isSaleActive === false || isLoading
                   ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
             >
               <ShoppingCart className="w-4 h-4" />
-              {product.isSaleActive === false ? 'Satışa Kapalı' : 'Sepete Ekle'}
+              {isLoading ? 'Ekleniyor...' : product.isSaleActive === false ? 'Satışa Kapalı' : 'Sepete Ekle'}
             </button>
           </div>
         </div>
@@ -191,15 +206,16 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
         {/* Add to Cart Button */}
         <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <button 
-            disabled={product.isSaleActive === false}
+            onClick={handleAddToCart}
+            disabled={product.isSaleActive === false || isLoading}
             className={`w-full py-2 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
-              product.isSaleActive === false
+              product.isSaleActive === false || isLoading
                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             }`}
           >
             <ShoppingCart className="w-4 h-4" />
-            {product.isSaleActive === false ? 'Satışa Kapalı' : 'Sepete Ekle'}
+            {isLoading ? 'Ekleniyor...' : product.isSaleActive === false ? 'Satışa Kapalı' : 'Sepete Ekle'}
           </button>
         </div>
       </div>

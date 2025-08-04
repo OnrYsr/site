@@ -1,35 +1,61 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, Trash2, ArrowRight } from 'lucide-react';
-
-const cartItems = [
-  {
-    id: 1,
-    name: 'Modern Ev Tasarımı',
-    price: 299.99,
-    image: '/api/placeholder/100/100',
-    quantity: 1,
-    slug: 'modern-ev-tasarimi'
-  },
-  {
-    id: 2,
-    name: 'Futuristik Araba Modeli',
-    price: 199.99,
-    image: '/api/placeholder/100/100',
-    quantity: 2,
-    slug: 'futuristik-araba-modeli'
-  }
-];
+import { ShoppingCart, Trash2, ArrowRight, Plus, Minus } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
+import { useState } from 'react';
 
 export default function CartPage() {
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const { items, totalAmount, totalItems, isLoading, removeFromCart, updateCartItem } = useCart();
+  const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
+
+  const handleQuantityChange = async (cartItemId: string, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    
+    setUpdatingItems(prev => new Set([...prev, cartItemId]));
+    try {
+      await updateCartItem(cartItemId, newQuantity);
+    } catch (error) {
+      console.error('Failed to update quantity:', error);
+    } finally {
+      setUpdatingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(cartItemId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleRemoveItem = async (cartItemId: string) => {
+    setUpdatingItems(prev => new Set([...prev, cartItemId]));
+    try {
+      await removeFromCart(cartItemId);
+    } catch (error) {
+      console.error('Failed to remove item:', error);
+      setUpdatingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(cartItemId);
+        return newSet;
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Sepet yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Sepetim</h1>
-        {cartItems.length === 0 ? (
+        {items.length === 0 ? (
           <div className="text-center py-24">
             <ShoppingCart className="w-16 h-16 mx-auto text-gray-300 mb-4" />
             <h2 className="text-xl font-semibold text-gray-700 mb-2">Sepetiniz boş</h2>
@@ -42,7 +68,7 @@ export default function CartPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="md:col-span-2 space-y-6">
-              {cartItems.map((item) => (
+              {items.map((item) => (
                 <div key={item.id} className="flex items-center gap-4 bg-white rounded-lg shadow p-4">
                   <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
                     <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -50,13 +76,34 @@ export default function CartPage() {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/products/${item.slug}`} className="font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                      {item.name}
+                    <Link href={`/products/${item.product.slug}`} className="font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                      {item.product.name}
                     </Link>
-                    <div className="text-gray-500 text-sm mt-1">Adet: {item.quantity}</div>
+                    <p className="text-gray-500 text-sm mt-1">{item.product.category.name}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <button
+                        onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                        disabled={updatingItems.has(item.id) || item.quantity <= 1}
+                        className="w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center disabled:opacity-50"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="text-sm font-medium min-w-[2ch] text-center">{item.quantity}</span>
+                      <button
+                        onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                        disabled={updatingItems.has(item.id)}
+                        className="w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center disabled:opacity-50"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="font-bold text-gray-900 text-lg">₺{item.price.toFixed(2)}</div>
-                  <button className="ml-2 text-gray-400 hover:text-red-500 transition-colors">
+                  <div className="font-bold text-gray-900 text-lg">₺{(Number(item.product.price) * item.quantity).toFixed(2)}</div>
+                  <button 
+                    onClick={() => handleRemoveItem(item.id)}
+                    disabled={updatingItems.has(item.id)}
+                    className="ml-2 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                  >
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
@@ -67,16 +114,16 @@ export default function CartPage() {
               <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Sipariş Özeti</h2>
                 <div className="flex justify-between mb-2">
-                  <span>Ara Toplam</span>
-                  <span>₺{total.toFixed(2)}</span>
+                  <span className="text-gray-900">Ara Toplam</span>
+                  <span className="text-gray-900">₺{totalAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between mb-2">
-                  <span>Kargo</span>
-                  <span>₺0.00</span>
+                  <span className="text-gray-900">Kargo</span>
+                  <span className="text-green-600">₺0.00</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg mt-4">
-                  <span>Toplam</span>
-                  <span>₺{total.toFixed(2)}</span>
+                  <span className="text-gray-900">Toplam</span>
+                  <span className="text-gray-900">₺{totalAmount.toFixed(2)}</span>
                 </div>
               </div>
               <Link href="/checkout" className="mt-8 w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">

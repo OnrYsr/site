@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Lock, Mail, LogIn, AlertCircle, Clock, Shield } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import AuthBackground from '@/components/ui/AuthBackground';
 
 interface RateLimitInfo {
   isBlocked: boolean;
@@ -125,8 +126,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
+    <AuthBackground>
+      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8 w-full max-w-md mx-4">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <LogIn className="w-8 h-8 text-white" />
@@ -228,7 +229,17 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+
+        {/* Register Link */}
+        <div className="text-center mt-6">
+          <p className="text-gray-600">
+            Hesabınız yok mu?{' '}
+            <Link href="/auth/register" className="text-blue-600 hover:text-blue-700 font-medium">
+              Kayıt Ol
+            </Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </AuthBackground>
   );
 } 

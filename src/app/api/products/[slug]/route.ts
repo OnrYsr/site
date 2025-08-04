@@ -65,6 +65,7 @@ export async function GET(
       images: product.images,
       stock: product.stock,
       isActive: product.isActive,
+      isSaleActive: product.isSaleActive,
       isFeatured: product.isFeatured,
       category: product.category.name,
       categorySlug: product.category.slug,

@@ -7,7 +7,8 @@ Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, Type
 ### **✅ Canlı Site URL'leri:**
 - **🔗 Ana Site**: [https://muse3dstudio.com](https://muse3dstudio.com)
 - **🔗 www Subdomain**: [https://www.muse3dstudio.com](https://www.muse3dstudio.com)
-- **⚙️ Admin Panel**: [https://muse3dstudio.com/auth/login](https://muse3dstudio.com/auth/login)
+- **⚙️ Admin Panel**: [https://muse3dstudio.com/admin](https://muse3dstudio.com/admin)
+- **🔐 Login**: [https://muse3dstudio.com/auth/login](https://muse3dstudio.com/auth/login)
 - **🏥 Health Check**: [https://muse3dstudio.com/api/health](https://muse3dstudio.com/api/health)
 
 ### **🍓 Raspberry Pi Production Altyapısı:**
@@ -25,6 +26,33 @@ Modern, ölçeklenebilir ve tam özellikli e-ticaret platformu. Next.js 15, Type
 - **🚀 Global CDN**: 200+ edge locations worldwide
 - **⚡ Performance**: 239 Mbps Ethernet, 5ms ping
 - **🔐 Zero Trust**: No direct IP exposure, tunnel-only access
+
+---
+
+## 🔐 **LOGIN BİLGİLERİ**
+
+### **👤 Admin Kullanıcı:**
+```
+Email: admin@muse3dstudio.com
+Password: admin123
+Role: ADMIN
+```
+
+### **👤 Test Kullanıcı:**
+```
+Email: test@muse3dstudio.com
+Password: test123
+Role: USER
+```
+
+### **🔑 Yeni Admin Oluşturma:**
+```bash
+# Local development
+npm run create:admin
+
+# Production (Raspberry Pi)
+./scripts/make-admin.js
+```
 
 ---
 
@@ -63,6 +91,8 @@ make setup
 Kurulum tamamlandığında aşağıdaki adreslerden servislere ulaşabilirsiniz:
 - **Uygulama**: http://localhost:3000
 - **Admin Panel**: http://localhost:3000/admin
+- **Login**: http://localhost:3000/auth/login
+- **Register**: http://localhost:3000/auth/register
 - **Prisma Studio (Veritabanı Arayüzü)**: http://localhost:5555
 - **Sağlık Kontrolü (Health Check)**: http://localhost:3000/api/health
 
@@ -178,13 +208,28 @@ src/
 ├── app/                    # Next.js App Router
 │   ├── api/               # Backend API endpoints
 │   ├── admin/             # Admin panel pages
-│   └── (public)/          # Public pages
+│   │   ├── settings/      # Site settings management
+│   │   ├── products/      # Product management
+│   │   ├── categories/    # Category management
+│   │   ├── banners/       # Banner management
+│   │   ├── orders/        # Order management
+│   │   └── users/         # User management
+│   ├── auth/              # Authentication pages
+│   │   ├── login/         # Login page
+│   │   └── register/      # Registration page
+│   ├── cart/              # Shopping cart
+│   ├── checkout/          # Checkout process
+│   ├── profile/           # User profile
+│   └── products/          # Product pages
 ├── components/             # Reusable React components
 │   ├── ui/                # Base UI components
 │   ├── layout/            # Layout components
-│   └── [feature]/         # Feature-specific components
-├── lib/                   # Utility functions
+│   ├── home/              # Home page components
+│   ├── products/          # Product components
+│   └── providers/         # Context providers
 ├── hooks/                 # Custom React hooks
+│   └── useSiteSettings.ts # Site settings hook
+├── lib/                   # Utility functions
 ├── types/                 # TypeScript definitions
 └── utils/                 # Helper functions
 
@@ -275,30 +320,49 @@ server {
 
 ---
 
-**📅 Last Updated**: August 1, 2024  
-**🏷️ Version**: 1.1.0 Production  
+**📅 Last Updated**: August 4, 2025  
+**🏷️ Version**: 1.2.0 Production  
 **👨‍💻 Developed by**: Muse3DStudio Team
 
-## 📊 **CURRENT STATUS** (Updated: Aug 1, 2024)
+## 📊 **CURRENT STATUS** (Updated: Aug 4, 2025)
 
 ### ✅ **Recently Implemented Features:**
 
-#### 🔒 **Private Mode System** 
-- **PrivateWrapper**: Site-wide session protection
-- **ConditionalLayout**: Auth pages header/footer management  
-- **Registration Disabled**: Temporary private beta mode
-- **Login Required**: All pages require authentication
+#### 🔐 **Enhanced Authentication System**
+- **NextAuth.js Integration**: Complete authentication flow
+- **Role-based Access Control**: ADMIN and USER roles
+- **Session Management**: Secure session handling
+- **Rate Limiting**: IP and email-based protection
+- **Registration Control**: Admin can enable/disable registration
 
-#### 🛒 **isSaleActive Product Feature**
-- **Database**: `isSaleActive` field added to Product model
-- **Admin Panel**: New checkbox in product edit/create forms
-- **Frontend**: "Satışa Kapalı" badge + disabled cart buttons
-- **API**: Full CRUD support for sale status management
+#### 🛒 **Checkout & Payment System**
+- **Checkout Process**: Complete order flow
+- **Agreement Checkboxes**: Terms and Privacy Policy acceptance
+- **Cart Management**: Persistent cart with Redis
+- **Payment Integration**: Iyzico payment gateway (sandbox)
+- **Order Management**: Full order tracking system
 
-#### 🛡️ **Enhanced Admin Security**
-- **Role-based Access**: ADMIN role verification
-- **Clean UI**: Redundant admin header removed
-- **Session Protection**: Double authentication layer
+#### 🎨 **UI/UX Improvements**
+- **Sliding Background**: Dynamic auth page backgrounds
+- **Modern Design**: Tailwind CSS 4 implementation
+- **Responsive Layout**: Mobile-first design
+- **Loading States**: Smooth user experience
+- **Error Handling**: User-friendly error messages
+
+#### ⚙️ **Admin Panel Enhancements**
+- **Site Settings**: Registration toggle, maintenance mode
+- **Product Management**: Full CRUD operations
+- **Category Management**: Hierarchical category system
+- **Banner Management**: Dynamic banner system
+- **User Management**: User list and details
+- **Order Management**: Order tracking and status
+
+#### 🛡️ **Security Features**
+- **Input Validation**: Zod schema validation
+- **SQL Injection Protection**: Prisma ORM
+- **XSS Protection**: Content sanitization
+- **CSRF Protection**: NextAuth.js built-in
+- **Rate Limiting**: Redis-based protection
 
 ### 🚀 **Current Deployment Status:**
 
@@ -306,7 +370,7 @@ server {
 - **Method**: Manual Git clone to Raspberry Pi
 - **Status**: ✅ **LIVE** - https://muse3dstudio.com
 - **Health**: ✅ API responding (200 OK)
-- **Features**: ✅ Private mode + isSaleActive active
+- **Features**: ✅ All new features active
 
 #### ⚠️ **GitHub Actions CI/CD**
 - **Status**: ❌ **FAILED** (Last automated deploy failed)
@@ -314,40 +378,39 @@ server {
 - **Solution**: Manual deployment used as workaround
 
 #### 📍 **Local Development**
-- **Status**: ⚠️ **HAS ISSUES** (Header undefined, JWT errors)
-- **Action**: Needs clean repository pull
-- **Fix**: `git clone` fresh copy recommended
+- **Status**: ✅ **WORKING** (All features functional)
+- **Server**: http://localhost:3000
+- **Admin**: http://localhost:3000/admin
+- **Login**: http://localhost:3000/auth/login
 
 ### 🎯 **Next Priority Actions:**
 
-1. **🔧 Fix Local Development**
-```bash
-   # Clean local environment
-   cd /Users/home/Desktop
-   mv site site-backup
-   git clone https://github.com/OnrYsr/site.git site
-   ```
-
-2. **🤖 Repair GitHub Actions**
-   - Fix build errors
+1. **🔧 Fix GitHub Actions CI/CD**
+   - Resolve build errors
    - Test automated deployment pipeline
    - Restore CI/CD functionality
 
-3. **📊 Test Production Features**
-   - Verify isSaleActive works end-to-end
-   - Test private mode user flows
-   - Admin panel functionality check
+2. **💳 Complete Payment Integration**
+   - Fix Iyzico sandbox issues
+   - Implement production payment flow
+   - Add payment success/failure handling
+
+3. **📊 Production Monitoring**
+   - Set up error tracking
+   - Implement performance monitoring
+   - Add user analytics
 
 4. **🚀 Performance Optimization**
-   - Database seeding with new structured data
-   - Production monitoring setup
-   - Error tracking implementation
+   - Database query optimization
+   - Image optimization
+   - Caching strategies
 
 ### 📈 **Production Metrics:**
 - **Uptime**: ✅ 99.9% (Cloudflare CDN)
 - **Performance**: ⚡ 239 Mbps Pi connection  
-- **Security**: 🔒 Zero Trust + Private mode
+- **Security**: 🔒 Zero Trust + Authentication
 - **Global Access**: 🌍 200+ CDN locations
+- **Features**: ✅ All major features implemented
 
 ---
 

@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ShoppingCart, Star, Heart, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { ShoppingCart, Star, Heart, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useCart } from '@/contexts/CartContext';
 
 interface Product {
   id: string;
@@ -15,6 +16,7 @@ interface Product {
   images: string[];
   stock: number;
   isActive: boolean;
+  isSaleActive: boolean;
   isFeatured: boolean;
   category: string;
   categorySlug: string;
@@ -56,8 +58,22 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('specs');
-  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('description');
+  
+  // Cart hook
+  const { addToCart, isLoading: cartLoading } = useCart();
+
+  // Sepete ekleme handler
+  const handleAddToCart = async () => {
+    if (!product) return;
+    
+    try {
+      await addToCart(product.id);
+      console.log('Product added to cart:', product.name);
+    } catch (error) {
+      console.error('Failed to add product to cart:', error);
+    }
+  };
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -88,9 +104,7 @@ export default function ProductDetailPage() {
     }
   };
 
-  const toggleAccordion = (key: string) => {
-    setOpenAccordion((prev) => (prev === key ? null : key));
-  };
+
 
   const getProductImage = () => {
     if (!product?.images || product.images.length === 0) {
@@ -213,9 +227,23 @@ export default function ProductDetailPage() {
               )}
             </div>
             <div className="flex gap-4 mb-8">
-              <button className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                <ShoppingCart className="w-5 h-5" />
-                Sepete Ekle
+              <button 
+                onClick={handleAddToCart}
+                disabled={!product?.isActive || !product?.isSaleActive || product?.stock === 0 || cartLoading}
+                className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
+                  !product?.isActive || !product?.isSaleActive || product?.stock === 0 || cartLoading
+                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                {cartLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <ShoppingCart className="w-5 h-5" />
+                )}
+                {cartLoading ? 'Ekleniyor...' : 
+                 !product?.isActive || !product?.isSaleActive ? 'Satışa Kapalı' : 
+                 product?.stock === 0 ? 'Stokta Yok' : 'Sepete Ekle'}
               </button>
               <button className="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
                 <Heart className="w-5 h-5" />
@@ -233,38 +261,57 @@ export default function ProductDetailPage() {
           </div>
         </div>
         
-        {/* Ürün açıklaması ve sekmeler yan yana */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          {/* Ürün Açıklaması */}
-          <div className="md:col-span-2">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Ürün Açıklaması</h2>
-            <p className="text-gray-700 whitespace-pre-line">
-              {product.description || 'Bu ürün için henüz detaylı açıklama eklenmemiştir.'}
-            </p>
-          </div>
-          
-          {/* Accordion Sekmeler */}
-          <div className="space-y-3">
-            {tabs.map((tab) => (
-              <div key={tab.key} className="border rounded-lg bg-white">
+        {/* Ürün Detayları Sekmeler */}
+        <div className="mt-12">
+          {/* Tab Navigation */}
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-8 overflow-x-auto">
+              <button
+                onClick={() => setActiveTab('description')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                  activeTab === 'description'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Ürün Açıklaması
+              </button>
+              {tabs.map((tab) => (
                 <button
-                  className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 font-medium focus:outline-none"
-                  onClick={() => toggleAccordion(tab.key)}
-                  aria-expanded={openAccordion === tab.key}
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                    activeTab === tab.key
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
                 >
-                  <span>{tab.label}</span>
-                  {openAccordion === tab.key ? (
-                    <ChevronUp className="w-5 h-5" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5" />
-                  )}
+                  {tab.label}
                 </button>
-                {openAccordion === tab.key && (
-                  <div className="px-4 pb-4 text-gray-700 text-sm border-t animate-fade-in">
+              ))}
+            </nav>
+          </div>
+
+          {/* Tab Content */}
+          <div className="py-8">
+            {activeTab === 'description' && (
+              <div className="max-w-none">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Ürün Açıklaması</h3>
+                <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+                  {product.description || 'Bu ürün için henüz detaylı açıklama eklenmemiştir.'}
+                </p>
+              </div>
+            )}
+            
+            {tabs.map((tab) => (
+              activeTab === tab.key && (
+                <div key={tab.key} className="max-w-none">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">{tab.label}</h3>
+                  <div className="text-gray-700 leading-relaxed">
                     {tabContent[tab.key as keyof typeof tabContent]}
                   </div>
-                )}
-              </div>
+                </div>
+              )
             ))}
           </div>
         </div>
