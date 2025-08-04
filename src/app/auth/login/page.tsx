@@ -179,7 +179,7 @@ export default function LoginPage() {
                 value={form.email}
                 onChange={handleChange}
                 disabled={loading || rateLimit.isBlocked}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
                 placeholder="email@example.com"
               />
             </div>
@@ -200,7 +200,7 @@ export default function LoginPage() {
                 value={form.password}
                 onChange={handleChange}
                 disabled={loading || rateLimit.isBlocked}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
                 placeholder="••••••••"
               />
             </div>
