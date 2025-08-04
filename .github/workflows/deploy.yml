@@ -123,6 +123,21 @@ jobs:
         npm run db:seed
         echo "✅ Database seeded with new data"
         
+        # Apply sample images to database
+        echo "🎨 Applying sample images to database..."
+        node scripts/apply-sample-images.js
+        echo "✅ Sample images applied"
+        
+        # Apply images to all products
+        echo "🖼️ Applying images to all products..."
+        node scripts/apply-all-sample-images.js
+        echo "✅ Product images applied"
+        
+        # Apply images to all categories
+        echo "🏷️ Applying images to all categories..."
+        node scripts/apply-category-images.js
+        echo "✅ Category images applied"
+        
         # Update systemd services if changed (try without sudo first, fallback to sudo)
         echo "🔧 Updating systemd services..."
         cp systemd/muse3d-web.service /etc/systemd/system/ 2>/dev/null || sudo cp systemd/muse3d-web.service /etc/systemd/system/ || echo "Service file not changed"
