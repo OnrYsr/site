@@ -1,0 +1,36 @@
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg8" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a8edea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fed6e3;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg8)" />
+  
+  <!-- Hediye kutusu -->
+  <rect x="150" y="140" width="80" height="80" fill="#ff6b6b" stroke="#e55656" stroke-width="2" />
+  <rect x="185" y="140" width="10" height="80" fill="#ffd93d" />
+  <rect x="150" y="175" width="80" height="10" fill="#ffd93d" />
+  
+  <!-- Kurdele -->
+  <path d="M 175 140 Q 175 120 190 120 Q 205 120 205 140" fill="none" stroke="#ffd93d" stroke-width="8" stroke-linecap="round" />
+  <path d="M 185 120 Q 175 110 165 115 Q 175 105 185 110" fill="#ffd93d" />
+  <path d="M 195 120 Q 205 110 215 115 Q 205 105 195 110" fill="#ffd93d" />
+  
+  <!-- Kalp süsü -->
+  <path d="M 280 100 C 280 85, 265 85, 265 100 C 265 85, 250 85, 250 100 C 250 115, 265 130, 280 145 C 295 130, 310 115, 310 100 C 310 85, 295 85, 295 100 C 295 85, 280 85, 280 100 Z" 
+        fill="#e91e63" opacity="0.7" />
+  
+  <!-- Yıldızlar -->
+  <path d="M 100 80 L 105 95 L 120 95 L 108 105 L 113 120 L 100 110 L 87 120 L 92 105 L 80 95 L 95 95 Z" 
+        fill="#9c27b0" opacity="0.8" />
+  <path d="M 320 200 L 323 208 L 332 208 L 325 214 L 328 222 L 320 218 L 312 222 L 315 214 L 308 208 L 317 208 Z" 
+        fill="#9c27b0" opacity="0.8" />
+  
+  <text x="200" y="270" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#2c5aa0" text-anchor="middle">
+    Günlük Yaşam & Hediyelik
+  </text>
+  <text x="380" y="290" font-family="Arial, sans-serif" font-size="10" fill="rgba(0,0,0,0.5)" text-anchor="end">
+    400x300
+  </text>
+</svg>

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowRight, Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Banner {
@@ -38,7 +37,7 @@ export default function HeroBanner() {
   const fetchActiveBanners = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/banners/active');
+      const response = await fetch('/api/banners/active?type=HERO');
       const data = await response.json();
 
       if (data.success) {
@@ -65,9 +64,9 @@ export default function HeroBanner() {
   // Loading state
   if (loading) {
     return (
-      <section className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 text-white overflow-hidden h-96 lg:h-[500px]">
+      <section className="relative h-96 lg:h-[500px] bg-gray-200 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       </section>
     );
@@ -76,13 +75,13 @@ export default function HeroBanner() {
   // Error state
   if (error) {
     return (
-      <section className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 text-white overflow-hidden h-96 lg:h-[500px]">
+      <section className="relative h-96 lg:h-[500px] bg-gray-200 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-white/80 mb-4">{error}</p>
+            <p className="text-gray-600 mb-4">{error}</p>
             <button 
               onClick={fetchActiveBanners}
-              className="text-white hover:underline"
+              className="text-blue-600 hover:underline"
             >
               Tekrar dene
             </button>
@@ -92,36 +91,19 @@ export default function HeroBanner() {
     );
   }
 
-  // No banners - show default
-  if (banners.length === 0) {
+  // No banners
+  if (banners.length === 0 && !loading) {
     return (
-      <section className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 text-white overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10"></div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+      <section className="relative h-96 lg:h-[500px] bg-gray-200 overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              En Kaliteli
-              <span className="block text-yellow-300">3D Ürünler</span>
-              <span className="block text-2xl md:text-3xl lg:text-4xl font-normal mt-2">
-                Profesyonel Tasarımlar
-              </span>
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-blue-100 mb-8">
-              Binlerce yüksek kaliteli 3D model ve tasarım. Projelerinizi hayata geçirin.
-            </p>
-            
-            <Link
-              href="/products"
-              className="inline-flex items-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
+            <p className="text-gray-600 mb-4">Banner verisi bulunamadı</p>
+            <button 
+              onClick={fetchActiveBanners}
+              className="text-blue-600 hover:underline"
             >
-              Ürünleri Keşfet
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
+              Tekrar dene
+            </button>
           </div>
         </div>
       </section>
@@ -131,7 +113,7 @@ export default function HeroBanner() {
   const currentBanner = banners[currentIndex];
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-hidden h-96 lg:h-[500px]">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
@@ -139,107 +121,50 @@ export default function HeroBanner() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -300 }}
           transition={{ duration: 0.5 }}
-          className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 text-white"
-          style={{
-            backgroundImage: currentBanner.image ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${currentBanner.image})` : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
+          className="relative w-full h-full"
         >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10"></div>
-          </div>
-
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
-            <div className="text-center lg:text-left max-w-4xl">
-              <motion.h1 
-                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-              >
-                {currentBanner.title}
-              </motion.h1>
-              
-              {currentBanner.subtitle && (
-                <motion.p 
-                  className="text-xl md:text-2xl text-blue-100 mb-8"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.6 }}
-                >
-                  {currentBanner.subtitle}
-                </motion.p>
-              )}
-              
-              <motion.div
-                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.6 }}
-              >
-                {currentBanner.link ? (
-                  <Link
-                    href={currentBanner.link}
-                    className="inline-flex items-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
-                  >
-                    Keşfet
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                ) : (
-                  <Link
-                    href="/products"
-                    className="inline-flex items-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
-                  >
-                    Ürünleri Keşfet
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                )}
-                
-                <button className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-all transform hover:scale-105">
-                  <Play className="mr-2 h-5 w-5" />
-                  Demo İzle
-                </button>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Navigation Controls */}
-          {banners.length > 1 && (
-            <>
-              <button
-                onClick={goToPrevious}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-2 rounded-full transition-all"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              
-              <button
-                onClick={goToNext}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-2 rounded-full transition-all"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-
-              {/* Dots Indicator */}
-              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                {banners.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentIndex(index)}
-                    className={`w-3 h-3 rounded-full transition-all ${
-                      index === currentIndex 
-                        ? 'bg-white' 
-                        : 'bg-white/40 hover:bg-white/70'
-                    }`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
+          {/* Banner Image */}
+          <img
+            src={currentBanner.image}
+            alt={`Banner ${currentIndex + 1}`}
+            className="w-full h-full object-cover"
+          />
         </motion.div>
       </AnimatePresence>
+
+      {/* Navigation Controls - sadece birden fazla banner varsa */}
+      {banners.length > 1 && (
+        <>
+          <button
+            onClick={goToPrevious}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all shadow-lg"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          
+          <button
+            onClick={goToNext}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all shadow-lg"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
+          {/* Dots Indicator */}
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            {banners.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`w-3 h-3 rounded-full transition-all ${
+                  index === currentIndex 
+                    ? 'bg-white' 
+                    : 'bg-white/40 hover:bg-white/70'
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Wave Decoration */}
       <div className="absolute bottom-0 left-0 right-0">

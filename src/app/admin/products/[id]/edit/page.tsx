@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import FileUpload from '@/components/ui/FileUpload';
 
 interface Category {
   id: string;
@@ -55,7 +56,7 @@ export default function AdminProductEditPage() {
     originalPrice: 0,
     stock: 0,
     categoryId: '',
-    images: '',
+    images: [] as string[],
     isActive: true,
     isSaleActive: true,
     isFeatured: false,
@@ -123,7 +124,7 @@ export default function AdminProductEditPage() {
           originalPrice: productData.originalPrice || 0,
           stock: productData.stock,
           categoryId: productData.categoryId,
-          images: productData.images.join(', '),
+          images: productData.images || [],
           isActive: productData.isActive,
           isSaleActive: productData.isSaleActive ?? true,
           isFeatured: productData.isFeatured,
@@ -158,12 +159,6 @@ export default function AdminProductEditPage() {
     setError(null);
 
     try {
-      // Görsel array'ini hazırla
-      const imagesArray = form.images
-        .split(',')
-        .map(url => url.trim())
-        .filter(url => url.length > 0);
-
       const updateData = {
         name: form.name,
         description: form.description || null,
@@ -171,7 +166,7 @@ export default function AdminProductEditPage() {
         originalPrice: form.originalPrice || null,
         stock: form.stock,
         categoryId: form.categoryId,
-        images: imagesArray,
+        images: form.images,
         isActive: form.isActive,
         isSaleActive: form.isSaleActive,
         isFeatured: form.isFeatured,
@@ -370,20 +365,31 @@ export default function AdminProductEditPage() {
 
         {/* Görseller */}
         <div>
-          <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Ürün Görselleri
           </label>
-          <input
-            type="text"
-            id="images"
-            name="images"
-            value={form.images}
-            onChange={handleChange}
-            className="admin-input"
-            placeholder="Görsel URL'lerini virgül ile ayırarak girin"
+          <FileUpload
+            category="products"
+            multiple={true}
+            maxFiles={5}
+            initialFiles={form.images}
+            onUpload={(uploadedFiles) => {
+              const newUrls = uploadedFiles.map(file => file.fileUrl);
+              setForm(prev => ({
+                ...prev,
+                images: [...prev.images, ...newUrls]
+              }));
+            }}
+            onRemove={(fileUrl) => {
+              setForm(prev => ({
+                ...prev,
+                images: prev.images.filter(url => url !== fileUrl)
+              }));
+            }}
+            disabled={saving}
           />
           <p className="text-xs text-gray-500 mt-1">
-            Birden fazla görsel için URL'leri virgül ile ayırın. Örnek: url1, url2, url3
+            Ürün görselleri yükleyin. Maksimum 5 adet görsel yükleyebilirsiniz.
           </p>
         </div>
 

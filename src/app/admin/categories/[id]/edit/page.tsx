@@ -356,13 +356,13 @@ export default function EditCategoryPage() {
                   Görsel URL'si
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   id="image"
                   name="image"
                   value={formData.image}
                   onChange={handleChange}
                   className="admin-input"
-                  placeholder="https://example.com/image.jpg (opsiyonel)"
+                  placeholder="/examples/categories/kategori-adi.svg veya https://example.com/image.jpg (opsiyonel)"
                 />
               </div>
 

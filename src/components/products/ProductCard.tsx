@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
 
@@ -33,15 +34,31 @@ interface ProductCardProps {
 export default function ProductCard({ product, viewMode }: ProductCardProps) {
   // Image için fallback
   const productImage = product.image || (product.images && product.images[0]) || '/api/placeholder/300/300';
+  
+  // Görsel yükleme state'leri
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   // List View
   if (viewMode === 'list') {
     return (
       <div className="bg-white rounded-lg shadow p-4 flex gap-4">
-        <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-          <div className="w-20 h-20 bg-blue-100 rounded-lg flex items-center justify-center">
-            <div className="w-12 h-12 bg-blue-500 rounded-sm transform rotate-45"></div>
-          </div>
+        <div className="w-32 h-32 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+          {!imageError && productImage !== '/api/placeholder/300/300' ? (
+            <img
+              src={productImage}
+              alt={product.name}
+              className={`w-full h-full object-cover transition-opacity duration-300 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-500 rounded-sm transform rotate-45"></div>
+            </div>
+          )}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -115,12 +132,24 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
   return (
     <div className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
       {/* Product Image */}
-      <div className="relative aspect-square bg-gray-100">
-        <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-          <div className="w-20 h-20 bg-white/50 rounded-lg flex items-center justify-center">
-            <div className="w-10 h-10 bg-blue-500 rounded-sm transform rotate-45"></div>
+      <div className="relative aspect-square bg-gray-100 overflow-hidden">
+        {!imageError && productImage !== '/api/placeholder/300/300' ? (
+          <img
+            src={productImage}
+            alt={product.name}
+            className={`w-full h-full object-cover transition-opacity duration-300 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+            <div className="w-20 h-20 bg-white/50 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-500 rounded-sm transform rotate-45"></div>
+            </div>
           </div>
-        </div>
+        )}
         
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1">

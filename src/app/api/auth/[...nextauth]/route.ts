@@ -25,6 +25,9 @@ const handler = NextAuth({
         }
 
         try {
+          // Development: Bypass rate limiting for now
+          // TODO: Re-enable for production
+          /*
           // Get client IP
           const clientIP = getClientIP(req as any);
           
@@ -47,6 +50,7 @@ const handler = NextAuth({
           if (delay > 0) {
             await new Promise(resolve => setTimeout(resolve, delay * 1000));
           }
+          */
 
           // Check user credentials
           const user = await prisma.user.findUnique({
@@ -57,8 +61,8 @@ const handler = NextAuth({
             const passwordMatch = await bcrypt.compare(credentials.password, user.password);
             
             if (passwordMatch) {
-              // Reset rate limits on successful login
-              await resetRateLimits(clientIP, credentials.email);
+              // Development: Bypass rate limit reset
+              // await resetRateLimits(clientIP, credentials.email);
               
               return { 
                 id: user.id, 

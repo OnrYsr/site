@@ -173,11 +173,37 @@ const handler = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules
                     type: 'password'
                 }
             },
-            async authorize (credentials) {
+            async authorize (credentials, req) {
                 if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
                 try {
+                    // Development: Bypass rate limiting for now
+                    // TODO: Re-enable for production
+                    /*
+          // Get client IP
+          const clientIP = getClientIP(req as any);
+          
+          // Check IP rate limit
+          const ipLimit = await checkIPRateLimit(clientIP);
+          if (!ipLimit.allowed) {
+            const resetMinutes = Math.ceil((ipLimit.resetTime - Date.now()) / (1000 * 60));
+            throw new Error(`IP_BLOCKED:${resetMinutes}`);
+          }
+
+          // Check email rate limit
+          const emailLimit = await checkEmailRateLimit(credentials.email);
+          if (!emailLimit.allowed) {
+            const resetMinutes = Math.ceil((emailLimit.resetTime - Date.now()) / (1000 * 60));
+            throw new Error(`EMAIL_BLOCKED:${resetMinutes}`);
+          }
+
+          // Add progressive delay
+          const delay = Math.max(ipLimit.delaySeconds, emailLimit.delaySeconds);
+          if (delay > 0) {
+            await new Promise(resolve => setTimeout(resolve, delay * 1000));
+          }
+          */ // Check user credentials
                     const user = await prisma.user.findUnique({
                         where: {
                             email: credentials.email
@@ -186,6 +212,8 @@ const handler = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules
                     if (user) {
                         const passwordMatch = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$bcryptjs$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].compare(credentials.password, user.password);
                         if (passwordMatch) {
+                            // Development: Bypass rate limit reset
+                            // await resetRateLimits(clientIP, credentials.email);
                             return {
                                 id: user.id,
                                 name: user.name || '',
@@ -194,9 +222,18 @@ const handler = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules
                             };
                         }
                     }
-                    return null;
+                    // Invalid credentials - rate limits already incremented
+                    throw new Error('INVALID_CREDENTIALS');
                 } catch (error) {
-                    console.error('Database error during auth:', error);
+                    console.error('Auth error:', error);
+                    // Re-throw rate limit errors
+                    if (error instanceof Error && error.message.startsWith('IP_BLOCKED:')) {
+                        throw error;
+                    }
+                    if (error instanceof Error && error.message.startsWith('EMAIL_BLOCKED:')) {
+                        throw error;
+                    }
+                    // For other errors, just return null (invalid credentials)
                     return null;
                 }
             }

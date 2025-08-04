@@ -1,0 +1,37 @@
+<svg width="800" height="800" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff9a9e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fecfef;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="vase" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </radialGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#bg3)" />
+  
+  <!-- Vazo -->
+  <ellipse cx="400" cy="650" rx="60" ry="20" fill="#8B4513" opacity="0.3" />
+  <path d="M 350 650 Q 350 550 380 500 Q 400 480 420 500 Q 450 550 450 650 Z" fill="url(#vase)" stroke="#2c3e50" stroke-width="3" />
+  
+  <!-- Çiçekler -->
+  <circle cx="370" cy="450" r="25" fill="#e74c3c" opacity="0.8" />
+  <circle cx="400" cy="430" r="30" fill="#f39c12" opacity="0.8" />
+  <circle cx="430" cy="460" r="20" fill="#e74c3c" opacity="0.8" />
+  
+  <!-- Yapraklar -->
+  <ellipse cx="340" cy="480" rx="8" ry="20" fill="#27ae60" transform="rotate(-30 340 480)" />
+  <ellipse cx="460" cy="490" rx="8" ry="20" fill="#27ae60" transform="rotate(30 460 490)" />
+  <ellipse cx="400" cy="500" rx="10" ry="25" fill="#27ae60" />
+  
+  <!-- Dekoratif çerçeve -->
+  <rect x="50" y="50" width="700" height="700" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="4" rx="20" />
+  
+  <text x="400" y="750" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50" text-anchor="middle">
+    Dekoratif Vazo
+  </text>
+  <text x="750" y="780" font-family="Arial, sans-serif" font-size="14" fill="rgba(0,0,0,0.5)" text-anchor="end">
+    800 x 800px
+  </text>
+</svg>

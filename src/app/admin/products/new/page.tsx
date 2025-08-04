@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import FileUpload from '@/components/ui/FileUpload';
 
 interface Category {
   id: string;
@@ -17,7 +18,7 @@ const initialForm = {
   originalPrice: '',
   stock: '',
   categoryId: '',
-  images: '',
+  images: [] as string[],
   description: '',
   isActive: true,
   isSaleActive: true,
@@ -115,18 +116,13 @@ export default function AdminProductNewPage() {
     try {
       setLoading(true);
 
-      // İmajları array'e çevir
-      const imageArray = form.images 
-        ? form.images.split(',').map(img => img.trim()).filter(img => img)
-        : [];
-
       const productData = {
         name: form.name.trim(),
         slug: generateSlug(form.name.trim()),
         description: form.description.trim(),
         price: Number(form.price),
         originalPrice: form.originalPrice ? Number(form.originalPrice) : null,
-        images: imageArray,
+        images: form.images,
         stock: Number(form.stock),
         isActive: form.isActive,
         isSaleActive: form.isSaleActive,
@@ -278,17 +274,28 @@ export default function AdminProductNewPage() {
         </div>
 
         <div>
-          <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-2">Görsel URL'leri</label>
-          <input
-            type="text"
-            id="images"
-            name="images"
-            value={form.images}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Görsel URL'leri virgül ile ayırın"
+          <label className="block text-sm font-medium text-gray-700 mb-2">Ürün Görselleri</label>
+          <FileUpload
+            category="products"
+            multiple={true}
+            maxFiles={5}
+            initialFiles={form.images}
+            onUpload={(uploadedFiles) => {
+              const newUrls = uploadedFiles.map(file => file.fileUrl);
+              setForm(prev => ({
+                ...prev,
+                images: [...prev.images, ...newUrls]
+              }));
+            }}
+            onRemove={(fileUrl) => {
+              setForm(prev => ({
+                ...prev,
+                images: prev.images.filter(url => url !== fileUrl)
+              }));
+            }}
+            disabled={loading}
           />
-          <p className="text-xs text-gray-500 mt-1">Birden fazla görsel için URL'leri virgül ile ayırın</p>
+          <p className="text-xs text-gray-500 mt-1">Ürün görselleri yükleyin. Maksimum 5 adet görsel yükleyebilirsiniz.</p>
         </div>
 
         <div className="flex items-start gap-6">
