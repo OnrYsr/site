@@ -265,11 +265,16 @@ const authOptions = {
             if (url.startsWith(baseUrl)) {
                 return url;
             }
+            // For admin login, redirect to admin panel
+            if (url.includes('/admin')) {
+                return baseUrl + '/admin';
+            }
             // Otherwise redirect to home page
             return baseUrl + '/';
         }
     },
-    debug: ("TURBOPACK compile-time value", "development") === 'development'
+    debug: ("TURBOPACK compile-time value", "development") === 'development',
+    secret: process.env.NEXTAUTH_SECRET
 };
 const handler = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"])(authOptions);
 ;

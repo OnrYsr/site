@@ -117,11 +117,17 @@ export const authOptions: AuthOptions = {
         return url;
       }
       
+      // For admin login, redirect to admin panel
+      if (url.includes('/admin')) {
+        return baseUrl + '/admin';
+      }
+      
       // Otherwise redirect to home page
       return baseUrl + '/';
     },
   },
   debug: process.env.NODE_ENV === 'development',
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

@@ -31,8 +31,8 @@ export default function PrivateWrapper({ children }: PrivateWrapperProps) {
     }
   }, [session, status, router, pathname]);
 
-  // Auth sayfaları - direkt render et  
-  if (pathname.startsWith('/auth')) {
+  // Auth ve Admin sayfaları - direkt render et  
+  if (pathname.startsWith('/auth') || pathname.startsWith('/admin')) {
     return <>{children}</>;
   }
 

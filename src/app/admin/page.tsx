@@ -1,7 +1,7 @@
 'use client';
 
-import { Package, Tag, Image, Users, ShoppingBag, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { Package, Tag, Image, Users, ShoppingBag, Settings } from 'lucide-react';
 
 const stats = [
   { label: 'Ürünler', value: 128, icon: Package, href: '/admin/products' },

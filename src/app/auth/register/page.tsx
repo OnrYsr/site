@@ -77,37 +77,37 @@ export default function RegisterPage() {
 
   // Eğer kayıt kapalıysa, kapalı sayfasını göster
   if (!settings.registrationEnabled) {
-    return (
+  return (
       <AuthBackground>
         <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8 w-full max-w-md mx-4">
-          <div className="text-center mb-8">
+        <div className="text-center mb-8">
             <div className="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <Settings className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Kayıt Kapalı</h1>
-            <p className="text-gray-600">Şu anda yeni kayıtlar alınmamaktadır.</p>
           </div>
-
-          <div className="space-y-4">
-            <Link
-              href="/auth/login"
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <UserPlus className="w-5 h-5" />
-              Giriş Sayfasına Git
-            </Link>
-            
-            <Link
-              href="/"
-              className="block text-center text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              Ana Sayfaya Dön
-            </Link>
-          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Kayıt Kapalı</h1>
+          <p className="text-gray-600">Şu anda yeni kayıtlar alınmamaktadır.</p>
         </div>
+
+        <div className="space-y-4">
+          <Link
+            href="/auth/login"
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <UserPlus className="w-5 h-5" />
+            Giriş Sayfasına Git
+          </Link>
+          
+          <Link
+            href="/"
+            className="block text-center text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            Ana Sayfaya Dön
+          </Link>
+        </div>
+      </div>
       </AuthBackground>
-    );
-  }
+  );
+}
 
   return (
     <AuthBackground>

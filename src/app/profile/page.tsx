@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { User, Mail, LogOut, Settings, ShoppingBag, FileText } from 'lucide-react';
+import { User, Mail, LogOut, Settings, ShoppingBag, FileText, MapPin } from 'lucide-react';
 
 const user = {
   name: 'Ahmet Yılmaz',
@@ -22,14 +22,17 @@ export default function ProfilePage() {
           <p className="text-gray-600 mb-4 flex items-center gap-2">
             <Mail className="w-4 h-4" /> {user.email}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 w-full mt-6">
-            <Link href="/profile/settings" className="flex-1 bg-gray-100 hover:bg-blue-50 text-blue-600 font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors">
+          <div className="grid grid-cols-2 gap-4 w-full mt-6">
+            <Link href="/profile/settings" className="bg-gray-100 hover:bg-blue-50 text-blue-600 font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors">
               <Settings className="w-5 h-5" /> Hesap Ayarları
             </Link>
-            <Link href="/profile/orders" className="flex-1 bg-gray-100 hover:bg-blue-50 text-blue-600 font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors">
+            <Link href="/profile/orders" className="bg-gray-100 hover:bg-blue-50 text-blue-600 font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors">
               <ShoppingBag className="w-5 h-5" /> Siparişlerim
             </Link>
-            <Link href="/profile/invoices" className="flex-1 bg-gray-100 hover:bg-blue-50 text-blue-600 font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors">
+            <Link href="/profile/addresses" className="bg-gray-100 hover:bg-blue-50 text-blue-600 font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors">
+              <MapPin className="w-5 h-5" /> Adreslerim
+            </Link>
+            <Link href="/profile/invoices" className="bg-gray-100 hover:bg-blue-50 text-blue-600 font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors">
               <FileText className="w-5 h-5" /> Faturalarım
             </Link>
           </div>

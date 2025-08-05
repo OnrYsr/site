@@ -112,10 +112,21 @@ export default function LoginPage() {
           blockType: null,
           resetMinutes: 0
         });
-        // Redirect all users to home page
-        // Admin panel can be accessed separately via /admin URL
-        router.push('/');
-        router.refresh();
+        // Check if user is admin and redirect accordingly
+        if (result?.ok) {
+          // Get user info to check role
+          const response = await fetch('/api/auth/session');
+          const session = await response.json();
+          
+          if (session?.user?.role === 'ADMIN') {
+            // Admin users go to admin panel
+            router.push('/admin');
+          } else {
+            // Regular users go to home page
+            router.push('/');
+          }
+          router.refresh();
+        }
       }
     } catch (err) {
       console.error('Login exception:', err);
