@@ -3,11 +3,19 @@
 import Link from 'next/link';
 import { ShoppingCart, Trash2, ArrowRight, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function CartPage() {
   const { items, totalAmount, totalItems, isLoading, removeFromCart, updateCartItem } = useCart();
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
+
+  // Debug için console log
+  useEffect(() => {
+    console.log('Cart items:', items);
+    console.log('Cart loading:', isLoading);
+    console.log('Cart total:', totalAmount);
+  }, [items, isLoading, totalAmount]);
 
   const handleQuantityChange = async (cartItemId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -17,6 +25,7 @@ export default function CartPage() {
       await updateCartItem(cartItemId, newQuantity);
     } catch (error) {
       console.error('Failed to update quantity:', error);
+      setError('Adet güncellenirken hata oluştu');
     } finally {
       setUpdatingItems(prev => {
         const newSet = new Set(prev);
@@ -32,6 +41,7 @@ export default function CartPage() {
       await removeFromCart(cartItemId);
     } catch (error) {
       console.error('Failed to remove item:', error);
+      setError('Ürün silinirken hata oluştu');
       setUpdatingItems(prev => {
         const newSet = new Set(prev);
         newSet.delete(cartItemId);
@@ -51,10 +61,35 @@ export default function CartPage() {
     );
   }
 
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md text-center">
+          <div className="text-red-600 mb-4">{error}</div>
+          <button 
+            onClick={() => setError(null)}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Tekrar Dene
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Sepetim</h1>
+        
+        {/* Debug info */}
+        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            Debug: {items.length} ürün, Toplam: ₺{totalAmount.toFixed(2)}, Loading: {isLoading.toString()}
+          </p>
+        </div>
+        
         {items.length === 0 ? (
           <div className="text-center py-24">
             <ShoppingCart className="w-16 h-16 mx-auto text-gray-300 mb-4" />
