@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { CreditCard, User, Mail, MapPin, ArrowLeft, CheckCircle, ShoppingCart, Loader2, Lock } from 'lucide-react';
+import { CreditCard, User, Mail, MapPin, ArrowLeft, CheckCircle, ShoppingCart, Loader2, Lock, Building } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
 interface ShippingInfo {
@@ -32,7 +32,7 @@ export default function CheckoutPage() {
   const { data: session, status } = useSession();
   const { items, totalAmount, totalItems, isLoading: cartLoading, clearCart, fetchCart } = useCart();
   
-  const [step, setStep] = useState(1);
+  const [activeTab, setActiveTab] = useState<'shipping' | 'payment'>('shipping');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderCreated, setOrderCreated] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
@@ -120,20 +120,10 @@ export default function CheckoutPage() {
     }));
   };
 
-  const handleNext = () => {
-    // Form validasyonu
+  const validateShippingInfo = () => {
     const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city'];
-    const isValid = requiredFields.every(field => shippingInfo[field as keyof ShippingInfo]?.trim());
-    
-    if (!isValid) {
-      alert('Lütfen tüm gerekli alanları doldurun');
-      return;
-    }
-    
-    setStep(2);
+    return requiredFields.every(field => shippingInfo[field as keyof ShippingInfo]?.trim());
   };
-
-  const handleBack = () => setStep(1);
 
   const validatePaymentCard = () => {
     const { cardHolderName, cardNumber, expireMonth, expireYear, cvc } = paymentCard;
@@ -158,6 +148,11 @@ export default function CheckoutPage() {
     
     if (items.length === 0) {
       setPaymentError('Sepetiniz boş!');
+      return;
+    }
+
+    if (!validateShippingInfo()) {
+      setPaymentError('Lütfen tüm gerekli adres bilgilerini doldurun');
       return;
     }
 
@@ -268,24 +263,40 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Sol taraf - Checkout formu */}
+          {/* Sol taraf - Ödeme formu */}
           <div className="bg-white rounded-xl shadow-lg p-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Ödeme Bilgileri</h1>
             
-            {/* Progress indicator */}
-            <div className="flex items-center mb-8">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                1
-              </div>
-              <div className={`flex-1 h-1 mx-4 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                2
-              </div>
+            {/* Tab Navigation */}
+            <div className="flex mb-8 border-b border-gray-200">
+              <button
+                onClick={() => setActiveTab('shipping')}
+                className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'shipping'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Building className="w-4 h-4 inline mr-2" />
+                Adres Bilgileri
+              </button>
+              <button
+                onClick={() => setActiveTab('payment')}
+                className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'payment'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <CreditCard className="w-4 h-4 inline mr-2" />
+                Kart Bilgileri
+              </button>
             </div>
 
             <form onSubmit={handleSubmitOrder} className="space-y-6">
-              {step === 1 && (
-                <>
+              {/* Adres Bilgileri Tab */}
+              {activeTab === 'shipping' && (
+                <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -298,7 +309,7 @@ export default function CheckoutPage() {
                         value={shippingInfo.firstName}
                         onChange={handleShippingChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Adınız"
                       />
                     </div>
@@ -313,7 +324,7 @@ export default function CheckoutPage() {
                         value={shippingInfo.lastName}
                         onChange={handleShippingChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Soyadınız"
                       />
                     </div>
@@ -330,7 +341,7 @@ export default function CheckoutPage() {
                       value={shippingInfo.email}
                       onChange={handleShippingChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="E-posta adresiniz"
                     />
                   </div>
@@ -346,7 +357,7 @@ export default function CheckoutPage() {
                       value={shippingInfo.phone}
                       onChange={handleShippingChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Telefon numaranız"
                     />
                   </div>
@@ -362,7 +373,7 @@ export default function CheckoutPage() {
                       value={shippingInfo.address}
                       onChange={handleShippingChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Tam adresiniz"
                     />
                   </div>
@@ -379,7 +390,7 @@ export default function CheckoutPage() {
                         value={shippingInfo.city}
                         onChange={handleShippingChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Şehir"
                       />
                     </div>
@@ -393,7 +404,7 @@ export default function CheckoutPage() {
                         name="postalCode"
                         value={shippingInfo.postalCode}
                         onChange={handleShippingChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Posta kodu"
                       />
                     </div>
@@ -409,23 +420,31 @@ export default function CheckoutPage() {
                       name="company"
                       value={shippingInfo.company}
                       onChange={handleShippingChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Şirket adı"
                     />
                   </div>
                   
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-                  >
-                    Ödemeye Geç
-                  </button>
-                </>
+                  <div>
+                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+                      Sipariş Notları (Opsiyonel)
+                    </label>
+                    <textarea
+                      id="notes"
+                      name="notes"
+                      value={shippingInfo.notes}
+                      onChange={handleShippingChange}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Özel talepleriniz..."
+                    />
+                  </div>
+                </div>
               )}
               
-              {step === 2 && (
-                <>
+              {/* Kart Bilgileri Tab */}
+              {activeTab === 'payment' && (
+                <div className="space-y-6">
                   <div className="bg-blue-50 p-4 rounded-lg mb-6 flex items-center gap-3">
                     <Lock className="w-5 h-5 text-blue-600" />
                     <div>
@@ -458,7 +477,7 @@ export default function CheckoutPage() {
                       value={paymentCard.cardHolderName}
                       onChange={handlePaymentChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Kart üzerindeki isim"
                     />
                   </div>
@@ -477,7 +496,7 @@ export default function CheckoutPage() {
                         value={paymentCard.cardNumber}
                         onChange={handlePaymentChange}
                         required
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="1234 5678 9012 3456"
                       />
                     </div>
@@ -496,7 +515,7 @@ export default function CheckoutPage() {
                         value={paymentCard.expireMonth}
                         onChange={handlePaymentChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="12"
                       />
                     </div>
@@ -511,7 +530,7 @@ export default function CheckoutPage() {
                         value={paymentCard.expireYear}
                         onChange={handlePaymentChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="2025"
                       />
                     </div>
@@ -526,25 +545,10 @@ export default function CheckoutPage() {
                         value={paymentCard.cvc}
                         onChange={handlePaymentChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="123"
                       />
                     </div>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
-                      Sipariş Notları (Opsiyonel)
-                    </label>
-                    <textarea
-                      id="notes"
-                      name="notes"
-                      value={shippingInfo.notes}
-                      onChange={handleShippingChange}
-                      rows={3}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Özel talepleriniz..."
-                    />
                   </div>
 
                   {/* Sözleşme Onayları */}
@@ -591,36 +595,27 @@ export default function CheckoutPage() {
                       </label>
                     </div>
                   </div>
-                  
-                  <div className="flex justify-between gap-4">
-                    <button
-                      type="button"
-                      onClick={handleBack}
-                      className="w-1/2 bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <ArrowLeft className="w-5 h-5" />
-                      Geri
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-1/2 bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Ödeme İşleniyor...
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-5 h-5" />
-                          ₺{totalAmount.toFixed(2)} Öde
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </>
+                </div>
               )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Ödeme İşleniyor...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-5 h-5" />
+                    ₺{(totalAmount * 1.18).toFixed(2)} Öde
+                  </>
+                )}
+              </button>
             </form>
           </div>
 
@@ -652,12 +647,16 @@ export default function CheckoutPage() {
                 <span className="text-gray-900">₺{totalAmount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
+                <span className="text-gray-900">KDV (%18)</span>
+                <span className="text-gray-900">₺{(totalAmount * 0.18).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-gray-900">Kargo</span>
                 <span className="text-green-600">Ücretsiz</span>
               </div>
               <div className="flex justify-between font-bold text-lg border-t pt-2">
                 <span className="text-gray-900">Toplam</span>
-                <span className="text-gray-900">₺{totalAmount.toFixed(2)}</span>
+                <span className="text-gray-900">₺{(totalAmount * 1.18).toFixed(2)}</span>
               </div>
             </div>
 

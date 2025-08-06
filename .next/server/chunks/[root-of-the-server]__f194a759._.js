@@ -217,8 +217,10 @@ const authOptions = {
                             // await resetRateLimits(clientIP, credentials.email);
                             return {
                                 id: user.id,
-                                name: user.name || '',
+                                name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.name || '',
                                 email: user.email,
+                                firstName: user.firstName,
+                                lastName: user.lastName,
                                 role: user.role
                             };
                         }
