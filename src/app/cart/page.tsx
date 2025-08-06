@@ -3,19 +3,50 @@
 import Link from 'next/link';
 import { ShoppingCart, Trash2, ArrowRight, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 
 export default function CartPage() {
+  const { data: session, status } = useSession();
   const { items, totalAmount, totalItems, isLoading, removeFromCart, updateCartItem } = useCart();
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
   // Debug için console log
   useEffect(() => {
+    console.log('Session status:', status);
+    console.log('Session data:', session);
     console.log('Cart items:', items);
     console.log('Cart loading:', isLoading);
     console.log('Cart total:', totalAmount);
-  }, [items, isLoading, totalAmount]);
+  }, [status, session, items, isLoading, totalAmount]);
+
+  // Authentication kontrolü
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md text-center">
+          <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Giriş Gerekli</h1>
+          <p className="text-gray-600 mb-6">Sepetinizi görüntülemek için giriş yapmalısınız.</p>
+          <Link href="/auth/login?callbackUrl=/cart" className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+            Giriş Yap
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const handleQuantityChange = async (cartItemId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -86,7 +117,7 @@ export default function CartPage() {
         {/* Debug info */}
         <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-sm text-yellow-800">
-            Debug: {items.length} ürün, Toplam: ₺{totalAmount.toFixed(2)}, Loading: {isLoading.toString()}
+            Debug: {items.length} ürün, Toplam: ₺{totalAmount.toFixed(2)}, Loading: {isLoading.toString()}, Auth: {status}
           </p>
         </div>
         
