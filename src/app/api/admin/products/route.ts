@@ -1,10 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
 
-const prisma = new PrismaClient();
+const productSchema = z.object({
+  name: z.string().min(1, 'Ürün adı gereklidir').trim(),
+  slug: z.string().min(1, 'Slug gereklidir').trim(),
+  description: z.string().optional().default(''),
+  price: z.number().positive('Geçerli bir fiyat girilmelidir'),
+  originalPrice: z.number().positive().optional().nullable(),
+  images: z.array(z.string().url()).optional().default([]),
+  stock: z.number().int().min(0, 'Stok miktarı 0 veya daha fazla olmalıdır'),
+  isActive: z.boolean().optional(),
+  isSaleActive: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
+  categoryId: z.string().min(1, 'Kategori seçilmelidir')
+});
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions as any) as any;
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
     const products = await prisma.product.findMany({
       include: {
         category: {
@@ -58,42 +77,23 @@ export async function GET() {
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // no-op for shared prisma
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, slug, description, price, originalPrice, images, stock, isActive, isSaleActive, isFeatured, categoryId } = await request.json();
-
-    // Validation
-    if (!name?.trim()) {
-      return NextResponse.json(
-        { success: false, error: 'Ürün adı gereklidir' },
-        { status: 400 }
-      );
+    const session = await getServerSession(authOptions as any) as any;
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!categoryId) {
-      return NextResponse.json(
-        { success: false, error: 'Kategori seçilmelidir' },
-        { status: 400 }
-      );
+    const parseResult = productSchema.safeParse(await request.json());
+    if (!parseResult.success) {
+      const message = parseResult.error.errors.map(e => e.message).join(', ');
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
-
-    if (!price || price <= 0) {
-      return NextResponse.json(
-        { success: false, error: 'Geçerli bir fiyat girilmelidir' },
-        { status: 400 }
-      );
-    }
-
-    if (stock < 0) {
-      return NextResponse.json(
-        { success: false, error: 'Stok miktarı 0 veya daha fazla olmalıdır' },
-        { status: 400 }
-      );
-    }
+    const { name, slug, description, price, originalPrice, images, stock, isActive, isSaleActive, isFeatured, categoryId } = parseResult.data;
 
     // Kategori var mı kontrol et
     const category = await prisma.category.findUnique({
@@ -169,6 +169,6 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // no-op for shared prisma
   }
 } 

@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
 
-const prisma = new PrismaClient();
+const bannerSchema = z.object({
+  title: z.string().min(1, 'Banner başlığı gereklidir').trim(),
+  subtitle: z.string().optional().nullable(),
+  image: z.string().min(1, 'Banner görseli gereklidir').trim(),
+  link: z.string().url().optional().nullable(),
+  type: z.enum(['HERO', 'FEATURED_PRODUCTS']).optional().default('HERO'),
+  isActive: z.boolean().optional().default(true),
+  order: z.number().int().min(0, 'Sıralama değeri 0 veya daha büyük bir sayı olmalıdır'),
+  startDate: z.string().datetime().optional().nullable(),
+  endDate: z.string().datetime().optional().nullable()
+});
 
 // Tüm banner'ları getir
 export async function GET() {
@@ -41,46 +54,24 @@ export async function GET() {
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // no-op for shared prisma
   }
 }
 
 // Yeni banner oluştur
 export async function POST(request: NextRequest) {
   try {
-    const { title, subtitle, image, link, type, isActive, order, startDate, endDate } = await request.json();
-
-    // Validation
-    if (!title?.trim()) {
-      return NextResponse.json(
-        { success: false, error: 'Banner başlığı gereklidir' },
-        { status: 400 }
-      );
+    const session = await getServerSession(authOptions as any) as any;
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!image?.trim()) {
-      return NextResponse.json(
-        { success: false, error: 'Banner görseli gereklidir' },
-        { status: 400 }
-      );
+    const parseResult = bannerSchema.safeParse(await request.json());
+    if (!parseResult.success) {
+      const message = parseResult.error.errors.map(e => e.message).join(', ');
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
-
-    // Type validation
-    if (type && !['HERO', 'FEATURED_PRODUCTS'].includes(type)) {
-      return NextResponse.json(
-        { success: false, error: 'Geçersiz banner tipi' },
-        { status: 400 }
-      );
-    }
-
-    // Order validation
-    const orderValue = Number(order);
-    if (isNaN(orderValue) || orderValue < 0) {
-      return NextResponse.json(
-        { success: false, error: 'Sıralama değeri 0 veya daha büyük bir sayı olmalıdır' },
-        { status: 400 }
-      );
-    }
+    const { title, subtitle, image, link, type, isActive, order, startDate, endDate } = parseResult.data;
 
     // Date validation
     let parsedStartDate = null;
@@ -122,7 +113,7 @@ export async function POST(request: NextRequest) {
         link: link?.trim() || null,
         type: type || 'HERO',
         isActive: isActive !== undefined ? isActive : true,
-        order: orderValue,
+        order: order,
         startDate: parsedStartDate,
         endDate: parsedEndDate
       }

@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
 
-const prisma = new PrismaClient();
+const categorySchema = z.object({
+  name: z.string().min(1, 'Kategori adı gereklidir').trim(),
+  description: z.string().optional().nullable(),
+  image: z.string().optional().nullable(),
+  parentId: z.string().optional().nullable(),
+  displayOrder: z.number().int().min(0, 'Gösterim sırası 0-999 arasında sayısal bir değer olmalıdır').max(999),
+  isActive: z.boolean().optional().default(true),
+  showOnHomepage: z.boolean().optional().default(false)
+});
 
 // Helper function to generate slug from name
 function generateSlug(name: string): string {
@@ -128,30 +139,25 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // no-op for shared prisma
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, description, image, parentId, displayOrder, isActive, showOnHomepage } = await request.json();
-
-    // Validation
-    if (!name?.trim()) {
-      return NextResponse.json(
-        { success: false, error: 'Kategori adı gereklidir' },
-        { status: 400 }
-      );
+    const session = await getServerSession(authOptions as any) as any;
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Validate displayOrder
-    const orderValue = Number(displayOrder);
-    if (isNaN(orderValue) || orderValue < 0 || orderValue > 999) {
-      return NextResponse.json(
-        { success: false, error: 'Gösterim sırası 0-999 arasında sayısal bir değer olmalıdır' },
-        { status: 400 }
-      );
+    const parseResult = categorySchema.safeParse(await request.json());
+    if (!parseResult.success) {
+      const message = parseResult.error.errors.map(e => e.message).join(', ');
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
+    const { name, description, image, parentId, displayOrder, isActive, showOnHomepage } = parseResult.data;
+
+
 
     // Validate parent category if provided
     if (parentId) {
@@ -185,7 +191,7 @@ export async function POST(request: NextRequest) {
         description: description?.trim() || null,
         image: image?.trim() || null,
         parentId: parentId || null,
-        displayOrder: orderValue,
+        displayOrder: displayOrder,
         isActive: isActive !== undefined ? isActive : true,
         showOnHomepage: showOnHomepage !== undefined ? showOnHomepage : false
       },
@@ -252,6 +258,6 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // no-op for shared prisma
   }
 } 

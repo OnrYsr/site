@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
@@ -31,6 +33,11 @@ async function ensureUploadDir(category: string): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    // Only authenticated ADMIN users can upload files
+    const session = await getServerSession(authOptions as any) as any;
+    if (!session || (session as any).user?.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const category = formData.get('category') as string || 'products';
@@ -107,6 +114,11 @@ export async function POST(request: NextRequest) {
 // Dosya silme endpoint'i
 export async function DELETE(request: NextRequest) {
   try {
+    // Only authenticated ADMIN users can delete files
+    const session = await getServerSession(authOptions as any) as any;
+    if (!session || (session as any).user?.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
     const { searchParams } = new URL(request.url);
     const fileUrl = searchParams.get('fileUrl');
 

@@ -39,7 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/auth/login');
+      router.push('/auth/login?callbackUrl=/admin');
     }
   }, [status, router]);
 

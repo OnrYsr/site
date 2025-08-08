@@ -1,15 +1,13 @@
 import NextAuth, { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { prisma } from '@/lib/prisma';
 import { 
   checkIPRateLimit, 
   checkEmailRateLimit, 
   resetRateLimits, 
   getClientIP 
 } from '@/lib/redis';
-
-const prisma = new PrismaClient();
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -25,32 +23,27 @@ export const authOptions: AuthOptions = {
         }
 
         try {
-          // Development: Bypass rate limiting for now
-          // TODO: Re-enable for production
-          /*
-          // Get client IP
-          const clientIP = getClientIP(req as any);
-          
-          // Check IP rate limit
-          const ipLimit = await checkIPRateLimit(clientIP);
-          if (!ipLimit.allowed) {
-            const resetMinutes = Math.ceil((ipLimit.resetTime - Date.now()) / (1000 * 60));
-            throw new Error(`IP_BLOCKED:${resetMinutes}`);
-          }
+          // Conditional rate limiting
+          if (process.env.RATE_LIMIT_ENABLED === 'true') {
+            const clientIP = getClientIP(req as any);
 
-          // Check email rate limit
-          const emailLimit = await checkEmailRateLimit(credentials.email);
-          if (!emailLimit.allowed) {
-            const resetMinutes = Math.ceil((emailLimit.resetTime - Date.now()) / (1000 * 60));
-            throw new Error(`EMAIL_BLOCKED:${resetMinutes}`);
-          }
+            const ipLimit = await checkIPRateLimit(clientIP);
+            if (!ipLimit.allowed) {
+              const resetMinutes = Math.ceil((ipLimit.resetTime - Date.now()) / (1000 * 60));
+              throw new Error(`IP_BLOCKED:${resetMinutes}`);
+            }
 
-          // Add progressive delay
-          const delay = Math.max(ipLimit.delaySeconds, emailLimit.delaySeconds);
-          if (delay > 0) {
-            await new Promise(resolve => setTimeout(resolve, delay * 1000));
+            const emailLimit = await checkEmailRateLimit(credentials.email);
+            if (!emailLimit.allowed) {
+              const resetMinutes = Math.ceil((emailLimit.resetTime - Date.now()) / (1000 * 60));
+              throw new Error(`EMAIL_BLOCKED:${resetMinutes}`);
+            }
+
+            const delay = Math.max(ipLimit.delaySeconds, emailLimit.delaySeconds);
+            if (delay > 0) {
+              await new Promise(resolve => setTimeout(resolve, delay * 1000));
+            }
           }
-          */
 
           // Check user credentials
           const user = await prisma.user.findUnique({
@@ -61,8 +54,10 @@ export const authOptions: AuthOptions = {
             const passwordMatch = await bcrypt.compare(credentials.password, user.password);
             
             if (passwordMatch) {
-              // Development: Bypass rate limit reset
-              // await resetRateLimits(clientIP, credentials.email);
+              if (process.env.RATE_LIMIT_ENABLED === 'true') {
+                const clientIP = getClientIP(req as any);
+                await resetRateLimits(clientIP, credentials.email);
+              }
               
               return { 
                 id: user.id, 
@@ -102,13 +97,14 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role;
+        token.role = (user as { role?: string }).role;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.sub!;
+        const derivedUserId = (typeof token.sub === 'string' && token.sub) || (typeof (token as any).id === 'string' && (token as any).id) || '';
+        session.user.id = derivedUserId;
         session.user.role = token.role as string;
       }
       return session;
@@ -119,12 +115,7 @@ export const authOptions: AuthOptions = {
         return url;
       }
       
-      // For admin login, redirect to admin panel
-      if (url.includes('/admin')) {
-        return baseUrl + '/admin';
-      }
-      
-      // Otherwise redirect to home page
+      // For external URLs, redirect to home page
       return baseUrl + '/';
     },
   },

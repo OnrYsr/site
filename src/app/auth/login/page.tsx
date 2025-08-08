@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Lock, Mail, LogIn, AlertCircle, Clock, Shield } from 'lucide-react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import AuthBackground from '@/components/ui/AuthBackground';
 
 interface RateLimitInfo {
@@ -25,6 +25,8 @@ export default function LoginPage() {
   });
   const [countdown, setCountdown] = useState(0);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   // Countdown timer for blocked users
   useEffect(() => {
@@ -118,13 +120,26 @@ export default function LoginPage() {
           const response = await fetch('/api/auth/session');
           const session = await response.json();
           
+          // Determine redirect URL based on user role and callback
+          let redirectUrl = callbackUrl;
+          
           if (session?.user?.role === 'ADMIN') {
-            // Admin users go to admin panel
-            router.push('/admin');
+            // Admin users: if callback is admin page, go there; otherwise go to admin panel
+            if (callbackUrl.includes('/admin')) {
+              redirectUrl = callbackUrl;
+            } else {
+              redirectUrl = '/admin';
+            }
           } else {
-            // Regular users go to home page
-            router.push('/');
+            // Regular users: if callback is admin page, redirect to home; otherwise go to callback
+            if (callbackUrl.includes('/admin')) {
+              redirectUrl = '/';
+            } else {
+              redirectUrl = callbackUrl;
+            }
           }
+          
+          router.push(redirectUrl);
           router.refresh();
         }
       }

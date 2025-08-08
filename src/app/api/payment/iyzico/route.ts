@@ -15,11 +15,11 @@ const IYZICO_CONFIG = {
   baseUrl: process.env.IYZICO_BASE_URL!
 };
 
-// Debug: Environment variables kontrolü
-console.log('🔍 DEBUG - Environment Variables:');
-console.log('IYZICO_API_KEY:', process.env.IYZICO_API_KEY);
-console.log('IYZICO_SECRET_KEY:', process.env.IYZICO_SECRET_KEY?.substring(0, 20) + '...');
-console.log('IYZICO_BASE_URL:', process.env.IYZICO_BASE_URL);
+// Debug: Environment variables kontrolü (sadece development'ta)
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔍 DEBUG - Environment Variables:');
+  console.log('IYZICO_BASE_URL:', process.env.IYZICO_BASE_URL);
+}
 
 // Log dosyası yazma fonksiyonu
 function writeToLogFile(message: string, data?: any) {
@@ -106,23 +106,19 @@ export function generateIyzicoSignature(
     .update(signatureString)
     .digest('base64');
 
-  // Debug bilgileri - görünmeyen karakterleri kontrol et
-  console.log('🔍 DEBUG - Signature Calculation:');
-  console.log('Random String:', randomString);
-  console.log('API Key:', apiKey);
-  console.log('Base64 Body Length:', base64Body.length);
-  console.log('Signature String Length:', signatureString.length);
-  console.log('Hash Length:', hash.length);
-  console.log('Hash:', hash);
-  console.log('Secret Key Length:', secretKey.length);
-  
-  // Görünmeyen karakterleri kontrol et
-  console.log('🔍 DEBUG - Invisible Characters Check:');
-  console.log('JSON Body Length:', jsonBody.length);
-  console.log('JSON Body (raw):', JSON.stringify(jsonBody));
-  console.log('JSON Body (escaped):', JSON.stringify(jsonBody).replace(/\\/g, '\\\\'));
-  console.log('Base64 Body (first 100 chars):', base64Body.substring(0, 100));
-  console.log('Signature String (first 100 chars):', signatureString.substring(0, 100));
+  // Debug bilgileri - sadece development'ta
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 DEBUG - Signature Calculation:');
+    console.log('Random String:', randomString);
+    console.log('Base64 Body Length:', base64Body.length);
+    console.log('Signature String Length:', signatureString.length);
+    console.log('Hash Length:', hash.length);
+    // Görünmeyen karakterleri kontrol et
+    console.log('🔍 DEBUG - Invisible Characters Check:');
+    console.log('JSON Body Length:', jsonBody.length);
+    console.log('Base64 Body (first 100 chars):', base64Body.substring(0, 100));
+    console.log('Signature String (first 100 chars):', signatureString.substring(0, 100));
+  }
 
   return {
     hash,
@@ -256,7 +252,7 @@ export async function POST(request: NextRequest) {
       }))
     };
 
-    logPaymentSimage.pngtep('5. İyzico request hazırlandı', {
+    logPaymentStep('5. İyzico request hazırlandı', {
       conversationId,
       totalAmount: totalAmount.toFixed(2),
       cardNumber: paymentCard.cardNumber.substring(0, 4) + '****',
@@ -279,13 +275,13 @@ export async function POST(request: NextRequest) {
       'Content-Type': 'application/json'
     };
 
-    logPaymentStep('6. İyzico signature hesaplandı', {
-      apiKey: IYZICO_CONFIG.apiKey?.substring(0, 10) + '...',
-      hashLength: signatureResult.hash.length,
-      randomString,
-      signatureString: randomString + IYZICO_CONFIG.apiKey + signatureResult.base64Body.substring(0, 50) + '...',
-      base64BodyLength: signatureResult.base64Body.length
-    });
+    if (process.env.NODE_ENV === 'development') {
+      logPaymentStep('6. İyzico signature hesaplandı', {
+        hashLength: signatureResult.hash.length,
+        randomString,
+        base64BodyLength: signatureResult.base64Body.length
+      });
+    }
     
     // İyzico API'ye ödeme isteği gönder
     logPaymentStep('7. İyzico API\'ye istek gönderiliyor', {
@@ -345,16 +341,17 @@ export async function POST(request: NextRequest) {
         }, { status: 500 });
       }
     } else {
+      const pr = paymentResult as Record<string, any>;
       logPaymentError('İyzico ödeme hatası', {
-        status: paymentResult.status,
-        errorMessage: paymentResult.errorMessage,
-        errorCode: paymentResult.errorCode
+        status: pr.status,
+        errorMessage: pr.errorMessage,
+        errorCode: pr.errorCode
       });
       
       return NextResponse.json({
         success: false,
-        error: paymentResult.errorMessage || 'Ödeme başarısız',
-        errorCode: paymentResult.errorCode
+        error: pr.errorMessage || 'Ödeme başarısız',
+        errorCode: pr.errorCode
       }, { status: 400 });
     }
 

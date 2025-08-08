@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 
-const prisma = new PrismaClient();
+// Using shared prisma
 
 // Tek ürün getir
 export async function GET(
@@ -9,6 +11,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions as any) as any;
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
     const { id } = await params;
     const product = await prisma.product.findUnique({
       where: { id },
@@ -60,7 +66,7 @@ export async function GET(
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // no-op for shared prisma
   }
 }
 
@@ -70,6 +76,10 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions as any) as any;
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
     const { id } = await params;
     const body = await request.json();
     
@@ -142,7 +152,7 @@ export async function PATCH(
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // no-op for shared prisma
   }
 }
 
@@ -152,6 +162,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions as any) as any;
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
     const { id } = await params;
     
     // Önce ürünün var olup olmadığını kontrol et
@@ -199,6 +213,6 @@ export async function DELETE(
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // no-op for shared prisma
   }
 } 
