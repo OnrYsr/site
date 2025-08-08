@@ -4,6 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { fileUploadSchema, sanitizeInput } from '@/lib/security';
 
 // Upload konfigürasyonu
 const UPLOAD_CONFIG = {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const category = formData.get('category') as string || 'products';
+    const category = sanitizeInput(formData.get('category') as string || 'products');
 
     // Dosya kontrolü
     if (!file) {
@@ -50,18 +51,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Boyut kontrolü
-    if (file.size > UPLOAD_CONFIG.maxSize) {
-      return NextResponse.json(
-        { success: false, error: `Dosya boyutu çok büyük. Maksimum ${UPLOAD_CONFIG.maxSize / 1048576}MB olmalıdır` },
-        { status: 400 }
-      );
-    }
+    // File validation using schema
+    const fileValidation = fileUploadSchema.safeParse({
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
 
-    // Tip kontrolü
-    if (!UPLOAD_CONFIG.allowedTypes.includes(file.type)) {
+    if (!fileValidation.success) {
       return NextResponse.json(
-        { success: false, error: `Desteklenmeyen dosya tipi: ${file.type}` },
+        { success: false, error: fileValidation.error.errors[0].message },
         { status: 400 }
       );
     }

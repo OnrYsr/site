@@ -15,11 +15,7 @@ const IYZICO_CONFIG = {
   baseUrl: process.env.IYZICO_BASE_URL!
 };
 
-// Debug: Environment variables kontrolü (sadece development'ta)
-if (process.env.NODE_ENV === 'development') {
-  console.log('🔍 DEBUG - Environment Variables:');
-  console.log('IYZICO_BASE_URL:', process.env.IYZICO_BASE_URL);
-}
+// Environment variables kontrolü (production'da log yok)
 
 // Log dosyası yazma fonksiyonu
 function writeToLogFile(message: string, data?: any) {
@@ -108,16 +104,7 @@ export function generateIyzicoSignature(
 
   // Debug bilgileri - sadece development'ta
   if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 DEBUG - Signature Calculation:');
-    console.log('Random String:', randomString);
-    console.log('Base64 Body Length:', base64Body.length);
-    console.log('Signature String Length:', signatureString.length);
-    console.log('Hash Length:', hash.length);
-    // Görünmeyen karakterleri kontrol et
-    console.log('🔍 DEBUG - Invisible Characters Check:');
-    console.log('JSON Body Length:', jsonBody.length);
-    console.log('Base64 Body (first 100 chars):', base64Body.substring(0, 100));
-    console.log('Signature String (first 100 chars):', signatureString.substring(0, 100));
+
   }
 
   return {

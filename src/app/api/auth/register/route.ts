@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { 
   checkRegisterIPRateLimit, 
   checkRegisterEmailRateLimit, 
   getClientIPFromRequest 
 } from '@/lib/redis';
-
-const prisma = new PrismaClient();
+import { sanitizeInput, passwordSchema, emailSchema } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,10 +15,32 @@ export async function POST(request: NextRequest) {
     
     const { name, email, password } = await request.json();
 
+    // Sanitize inputs
+    const sanitizedName = sanitizeInput(name);
+    const sanitizedEmail = sanitizeInput(email);
+
     // Basic validation first
-    if (!name || !email || !password) {
+    if (!sanitizedName || !sanitizedEmail || !password) {
       return NextResponse.json(
         { error: 'Tüm alanları doldurmanız gerekiyor' },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    const emailValidation = emailSchema.safeParse(sanitizedEmail);
+    if (!emailValidation.success) {
+      return NextResponse.json(
+        { error: emailValidation.error.errors[0].message },
+        { status: 400 }
+      );
+    }
+
+    // Validate password strength
+    const passwordValidation = passwordSchema.safeParse(password);
+    if (!passwordValidation.success) {
+      return NextResponse.json(
+        { error: passwordValidation.error.errors[0].message },
         { status: 400 }
       );
     }
@@ -40,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check email rate limit (1 registration per day per email)
-    const emailLimit = await checkRegisterEmailRateLimit(email);
+    const emailLimit = await checkRegisterEmailRateLimit(sanitizedEmail);
     if (!emailLimit.allowed) {
       const resetHours = Math.ceil((emailLimit.resetTime - Date.now()) / (1000 * 60 * 60));
       return NextResponse.json(
@@ -54,26 +75,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Additional validation
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Şifre en az 6 karakter olmalıdır' },
-        { status: 400 }
-      );
-    }
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Geçerli bir e-posta adresi giriniz' },
-        { status: 400 }
-      );
-    }
-
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: sanitizedEmail },
     });
 
     if (existingUser) {
@@ -93,8 +97,8 @@ export async function POST(request: NextRequest) {
     // Create user
     const user = await prisma.user.create({
       data: {
-        name,
-        email,
+        name: sanitizedName,
+        email: sanitizedEmail,
         password: hashedPassword,
         role: isFirstUser ? 'ADMIN' : 'USER', // İlk kullanıcı admin olur
       },
